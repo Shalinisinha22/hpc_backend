@@ -1,11 +1,14 @@
-import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
 import connectDB from './config/database';
 import userRoutes from './routes/userRoutes';
-import { logger } from './middlewares/loggerMiddleware';
-import { errorHandler } from './middlewares/errorMiddleware';
+import authRoutes from './routes/authRoutes';
+import roomRoutes from './routes/roomRoutes';
+import bookingRoutes from './routes/bookingRoutes';
+import { logger } from './middleware/loggerMiddleware';
+import { errorHandler } from './middleware/errorMiddleware';
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -16,6 +19,9 @@ app.use(logger);
 
 // Routes
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/rooms', roomRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);

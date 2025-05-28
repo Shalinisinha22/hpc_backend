@@ -14,6 +14,8 @@ export interface Booking extends Document {
     specialRequest?: string;
     saveMyInfo: boolean;
     paymentStatus: 'confirmed' | 'canceled' | 'completed';
+    createdAt: Date; // Added by timestamps
+    updatedAt: Date; // Added by timestamps
 }
 
 const BookingSchema: Schema = new Schema({
@@ -33,7 +35,9 @@ const BookingSchema: Schema = new Schema({
         type: String, 
         enum: ['confirmed', 'canceled', 'completed'], 
         required: true 
-    },
+    }
+}, {
+    timestamps: true, // This will add createdAt and updatedAt fields
 });
 
 export default mongoose.model<Booking>('Booking', BookingSchema);

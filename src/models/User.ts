@@ -1,5 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+
+interface UserDocument extends Document {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  status: string;
+  cdate: Date;
+  bookingIds: string[];
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -20,7 +31,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin','Front office','HR','Bqt Service','Account'],
+    enum: ['user', 'admin', 'Front Office', 'HR', 'Bqt Service', 'Account'],
     default: 'user'
   },
   status: {
@@ -31,20 +42,22 @@ const userSchema = new mongoose.Schema({
   cdate: {
     type: Date,
     default: Date.now
-  }
+  },
+  bookingIds: [{ type: String }]
 });
 
 
-userSchema.pre('save', async function(next) {
+userSchema.pre<UserDocument>('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
 userSchema.methods.comparePassword = async function(candidatePassword: string) {
-  return bcrypt.compare(candidatePassword, this.password);
+  const user = this as UserDocument;
+  return bcrypt.compare(candidatePassword, user.password);
 };
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model<UserDocument>('User', userSchema);
 
 export default User;

@@ -1,46 +1,45 @@
-import UserModel from '../models/userModel';
+import User from '../models/User';
+import jwt from 'jsonwebtoken';
 
 class UserService {
-    private users: any[] = []; 
-
     public async findUserByEmail(email: string) {
-        return await UserModel.findOne({ email });
+        return await User.findOne({ email });
     }
 
     public async registerUser(userData: any) {
-        const newUser = new UserModel(userData);
+        const newUser = new User(userData);
         await newUser.save();
-       
-        const token = 'generated-token'; 
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
         return { ...newUser.toObject(), token };
     }
 
-    loginUser(username: string, password: string) {
-      
-        const user = this.users.find(u => u.username === username && u.password === password);
+    public async loginUser(email: string, password: string) {
+        const user = await User.findOne({ email });
         if (!user) {
             throw new Error('Invalid credentials');
         }
-        return user;
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            throw new Error('Invalid credentials');
+        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+        return { ...user.toObject(), token };
     }
 
-    getUser(userId: number) {
- 
-        const user = this.users.find(u => u.userId === userId);
+    public async getUser(userId: string) {
+        const user = await User.findById(userId);
         if (!user) {
             throw new Error('User not found');
         }
         return user;
     }
 
-    updateUser(userId: number, updatedData: { username?: string; password?: string; email?: string }) {
-        
-        const userIndex = this.users.findIndex(u => u.userId === userId);
-        if (userIndex === -1) {
+    public async updateUser(userId: string, updatedData: { name?: string; password?: string; email?: string }) {
+        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+        if (!user) {
             throw new Error('User not found');
         }
-        this.users[userIndex] = { ...this.users[userIndex], ...updatedData };
-        return this.users[userIndex];
+        return user;
     }
 }
 

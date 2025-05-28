@@ -1,32 +1,71 @@
-import { Booking } from '../models/bookingModel';
+import Booking, { Booking as BookingType } from '../models/bookingModel';
+import { generateUniqueId } from '../utils/helpers';
 
-export class BookingService {
-    private bookings: Booking[] = [];
+interface DetailedBooking {
+    confirmation: string;
+    bookingId: string;
+    name: string;
+    email: string;
+    contact: string;
+    bookingDate: Date;
+    paymentStatus: string;
+}
 
-    public createBooking(booking: Booking): Booking {
-        this.bookings.push(booking);
-        return booking;
-    }
-
-    public getBooking(bookingId: string): Booking | undefined {
-        return this.bookings.find(booking => booking.bookingId === bookingId);
-    }
-
-    public updateBooking(bookingId: string, updatedBooking: Partial<Booking>): Booking | undefined {
-        const bookingIndex = this.bookings.findIndex(booking => booking.bookingId === bookingId);
-        if (bookingIndex !== -1) {
-            this.bookings[bookingIndex] = { ...this.bookings[bookingIndex], ...updatedBooking };
-            return this.bookings[bookingIndex];
+export class BookingService {    public async createBooking(booking: Partial<BookingType>) {
+        if (!booking.bookingId) {
+            booking.bookingId = generateUniqueId();
         }
-        return undefined;
+        console.log('Creating booking with userId:', booking.userId);
+        console.log('Booking data:', booking);
+        const newBooking = new Booking(booking);
+        await newBooking.save();
+    
+        if (booking.userId) {
+            const User = (await import('../models/User')).default;
+            await User.findByIdAndUpdate(
+                booking.userId,
+                { $push: { bookingIds: newBooking.bookingId } },
+                { new: true }
+            );
+        }
+        return newBooking;
     }
 
-    public deleteBooking(bookingId: string): boolean {
-        const bookingIndex = this.bookings.findIndex(booking => booking.bookingId === bookingId);
-        if (bookingIndex !== -1) {
-            this.bookings.splice(bookingIndex, 1);
-            return true;
-        }
-        return false;
+    public async getBooking(bookingId: string) {
+        return await Booking.findOne({ bookingId });
+    }    public async getAllBookings(): Promise<DetailedBooking[]> {
+        const bookings = await Booking.find()
+            .select({
+                bookingId: 1,
+                fullName: 1,
+                email: 1,
+                phone: 1,
+                paymentStatus: 1,
+                createdAt: 1
+            })
+            .sort({ createdAt: -1 }); // Most recent first
+
+        return bookings.map(booking => ({
+            confirmation: booking.bookingId,
+            bookingId: booking.bookingId,
+            name: booking.fullName,
+            email: booking.email,
+            contact: booking.phone,
+            bookingDate: booking.createdAt,
+            paymentStatus: booking.paymentStatus
+        }));
+    }
+
+    public async updateBooking(bookingId: string, updatedBooking: Partial<BookingType>) {
+        return await Booking.findOneAndUpdate({ bookingId }, updatedBooking, { new: true });
+    }
+
+    public async deleteBooking(bookingId: string) {
+        const result = await Booking.deleteOne({ bookingId });
+        return !!result.deletedCount && result.deletedCount > 0;
+    }
+
+    public async getBookingsByUserId(userId: string) {
+        return await Booking.find({ userId });
     }
 }

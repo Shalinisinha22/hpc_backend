@@ -1,14 +1,53 @@
-import express from 'express';
+import express, { Response, NextFunction, RequestHandler } from 'express';
 import { RoomController } from '../controllers/roomController';
-import { auth, adminAuth } from '../middleware/auth';
+import { auth, roleAuth, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 const roomController = new RoomController();
 
-router.post('/', adminAuth, roomController.createRoom);
-router.get('/', auth, roomController.getRooms);
-router.get('/:id', auth, roomController.getRoomById);
-router.put('/:id', adminAuth, roomController.updateRoom);
-router.delete('/:id', adminAuth, roomController.deleteRoom);
+const allowedRoles = ['admin', 'Front Office', 'HR'];
+
+// Helper to wrap async route handlers and catch errors
+function asyncHandler(fn: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>): RequestHandler {
+  return function (req, res, next) {
+    Promise.resolve(fn(req as AuthRequest, res, next)).catch(next);
+  };
+}
+
+router.post('/', auth, roleAuth(allowedRoles), async (req, res, next) => {
+  try {
+    await roomController.createRoom(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+router.get('/',  async (req, res, next) => {
+  try {
+    await roomController.getRooms(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+router.get('/:id', auth, async (req, res, next) => {
+  try {
+    await roomController.getRoomById(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+router.put('/:id', auth, roleAuth(allowedRoles), async (req, res, next) => {
+  try {
+    await roomController.updateRoom(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+router.delete('/:id', auth, roleAuth(allowedRoles), async (req, res, next) => {
+  try {
+    await roomController.deleteRoom(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;
