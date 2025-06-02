@@ -10,18 +10,35 @@ export class BookingController {
         try {
             const bookingData = {
                 ...req.body,
-                userId: req.user?._id.toString() // Ensure we use the authenticated user's ID
+                userId: req.user?._id.toString() 
             };
-            console.log('Creating booking with data:', bookingData);
+
             const booking = await this.bookingService.createBooking(bookingData);
-            res.status(201).json(booking);
+            const data=   {
+                _id: booking._id,
+                bookingId: booking.bookingId,
+                userId: booking.userId,
+                roomId: booking.roomId,
+                checkInDate: booking.checkInDate,
+                checkOutDate: booking.checkOutDate,
+                adults: booking.adults,
+                children: booking.children,
+                fullName: booking.fullName,
+                email: booking.email,
+                phone: booking.phone,
+                saveMyInfo: booking.saveMyInfo,
+                paymentStatus: booking.paymentStatus,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt
+            }
+            res.status(201).json({data,message: 'Booking created successfully'});
         } catch (error: unknown) {
             res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
         }
     }
 
     async getBooking(req: AuthRequest, res: Response): Promise<void> {
-        // Only allow admin
+   
         if (!req.user || req.user.role !== 'admin') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
@@ -39,7 +56,7 @@ export class BookingController {
     }
 
     async updateBooking(req: AuthRequest, res: Response): Promise<void> {
-        // Only allow admin
+ 
         if (!req.user || req.user.role !== 'admin') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
@@ -50,14 +67,14 @@ export class BookingController {
                 res.status(404).json({ error: 'Booking not found' });
                 return;
             }
-            res.json(booking);
+            res.json({booking,message:"Booking updated successfully"});
         } catch (error: unknown) {
             res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
         }
     }
 
     async deleteBooking(req: AuthRequest, res: Response): Promise<void> {
-        // Only allow admin
+        
         if (!req.user || req.user.role !== 'admin') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
@@ -73,7 +90,7 @@ export class BookingController {
             res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
         }
     }    async getAllBookings(req: AuthRequest, res: Response): Promise<void> {
-        // Only allow admin
+       
         if (!req.user || req.user.role !== 'admin') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
@@ -89,6 +106,8 @@ export class BookingController {
         } catch (error: unknown) {
             res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
         }
+
+
     }
 
     async getBookingsByUserId(req: AuthRequest, res: Response): Promise<void> {
@@ -102,7 +121,10 @@ export class BookingController {
         } catch (error: unknown) {
             res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
         }
-    }    async getBookingsByUserToken(req: AuthRequest, res: Response): Promise<void> {
+    }   
+    
+    
+    async getBookingsByUserToken(req: AuthRequest, res: Response): Promise<void> {
         try {
             if (!req.user) {
                 res.status(401).json({ error: 'Unauthorized' });
@@ -117,7 +139,6 @@ export class BookingController {
             const Room = (await import('../models/Room')).default;
             const User = (await import('../models/User')).default;
             
-            // Try both string and ObjectId versions of the ID
             const bookings = await Booking.find({ 
                 $or: [
                     { userId: req.user._id },
@@ -130,7 +151,7 @@ export class BookingController {
                 res.status(404).json({ error: 'No bookings found for this user' });
                 return;
             }
-            // Populate room and user details for each booking
+           
             const detailedBookings = await Promise.all(bookings.map(async (booking: any) => {
                 const room = await Room.findById(booking.roomId);
                 const user = await User.findById(booking.userId);

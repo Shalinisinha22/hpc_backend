@@ -1,5 +1,5 @@
 import Booking, { Booking as BookingType } from '../models/bookingModel';
-import { generateUniqueId } from '../utils/helpers';
+
 
 interface DetailedBooking {
     confirmation: string;
@@ -11,28 +11,42 @@ interface DetailedBooking {
     paymentStatus: string;
 }
 
-export class BookingService {    public async createBooking(booking: Partial<BookingType>) {
-        if (!booking.bookingId) {
-            booking.bookingId = generateUniqueId();
+export class BookingService {    
+    public async createBooking(booking: Partial<BookingType>) {
+        try {
+            const timestamp = new Date().getTime();
+            const bookingId = `BK-${timestamp}-${Math.random().toString(36).substr(2, 6)}`;
+            
+ 
+            const bookingData = {
+                ...booking,
+                bookingId
+            };
+
+            console.log('Creating booking with userId:', booking.userId);
+            console.log('Booking data:', bookingData);
+            
+            const newBooking = new Booking(bookingData);
+            await newBooking.save();
+        
+            if (booking.userId) {
+                const User = (await import('../models/User')).default;
+                await User.findByIdAndUpdate(
+                    booking.userId,
+                    { $push: { bookingIds: bookingId } },
+                    { new: true }
+                );
+            }
+            
+            return newBooking;
+        } catch (error) {
+            console.error('Error creating booking:', error);
+            throw error;
         }
-        console.log('Creating booking with userId:', booking.userId);
-        console.log('Booking data:', booking);
-        const newBooking = new Booking(booking);
-        await newBooking.save();
-    
-        if (booking.userId) {
-            const User = (await import('../models/User')).default;
-            await User.findByIdAndUpdate(
-                booking.userId,
-                { $push: { bookingIds: newBooking.bookingId } },
-                { new: true }
-            );
-        }
-        return newBooking;
     }
 
-    public async getBooking(bookingId: string) {
-        return await Booking.findOne({ bookingId });
+    public async getBooking(userId: string) {
+        return await Booking.findOne({ userId });
     }    public async getAllBookings(): Promise<DetailedBooking[]> {
         const bookings = await Booking.find()
             .select({
@@ -43,7 +57,7 @@ export class BookingService {    public async createBooking(booking: Partial<Boo
                 paymentStatus: 1,
                 createdAt: 1
             })
-            .sort({ createdAt: -1 }); // Most recent first
+            .sort({ createdAt: -1 }); 
 
         return bookings.map(booking => ({
             confirmation: booking.bookingId,

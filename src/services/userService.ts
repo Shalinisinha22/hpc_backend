@@ -1,46 +1,56 @@
 import User from '../models/User';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-class UserService {
-    public async findUserByEmail(email: string) {
-        return await User.findOne({ email });
+export default class UserService {
+    async registerUser(userData: { name: string; email: string; password: string; role?: string }) {
+        const existingUser = await User.findOne({ email: userData.email });
+        if (existingUser) {
+            throw new Error('Email already exists');
+        }
+
+        const user = new User({ 
+            ...userData,
+            role: userData.role || 'user' 
+        });
+        await user.save();
+
+        const token = this.generateToken(user._id);
+        return {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token,
+            message: "Registration successful"
+        };
     }
 
-    public async registerUser(userData: any) {
-        const newUser = new User(userData);
-        await newUser.save();
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-        return { ...newUser.toObject(), token };
-    }
-
-    public async loginUser(email: string, password: string) {
+    async loginUser(email: string, password: string) {
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error('Invalid credentials');
         }
-        const isMatch = await user.comparePassword(password);
+
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             throw new Error('Invalid credentials');
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-        return { ...user.toObject(), token };
+
+        const token = this.generateToken(user._id);
+        return {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token,
+            message: "Login successful"
+        };
     }
 
-    public async getUser(userId: string) {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        return user;
-    }
-
-    public async updateUser(userId: string, updatedData: { name?: string; password?: string; email?: string }) {
-        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
-        if (!user) {
-            throw new Error('User not found');
-        }
-        return user;
+    private generateToken(userId: string): string {
+        return jwt.sign(
+            { id: userId }, 
+            process.env.JWT_SECRET || 'secret', 
+            { expiresIn: '1d' }
+        );
     }
 }
-
-export default UserService;

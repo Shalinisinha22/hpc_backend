@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/register', registerUserController);
 router.post('/login', loginUserController);
 
-// Admin create user
+
 router.post('/admin', auth, roleAuth(['admin']), async (req, res, next) => {
   try {
     const userService = new (await import('../services/userService')).default();
@@ -19,15 +19,15 @@ router.post('/admin', auth, roleAuth(['admin']), async (req, res, next) => {
 });
 
 
-router.put('/admin/:id', auth, roleAuth(['admin']), async (req, res, next) => {
-  try {
-    const userService = new (await import('../services/userService')).default();
-    const updatedUser = await userService.updateUser(req.params.id, req.body);
-    res.json(updatedUser);
-  } catch (err) {
-    next(err);
-  }
-});
+// router.put('/admin/:id', auth, roleAuth(['admin']), async (req, res, next) => {
+//   try {
+//     const userService = new (await import('../services/userService')).default();
+//     const updatedUser = await userService.updateUser(req.params.id, req.body);
+//     res.json(updatedUser);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 
 router.get('/members', auth, roleAuth(['admin']), async (req, res, next) => {

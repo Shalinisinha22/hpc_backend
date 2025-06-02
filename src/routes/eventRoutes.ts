@@ -5,6 +5,6 @@ import { auth, roleAuth } from '../middleware/auth';
 const router = Router();
 
 router.post('/', auth,roleAuth(['admin']), createEvent);
-router.get('/', getAllEvents);
+router.get('/', auth, getAllEvents);
 
 export default router;

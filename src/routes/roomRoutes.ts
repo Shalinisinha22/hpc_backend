@@ -21,7 +21,7 @@ router.post('/', auth, roleAuth(allowedRoles), async (req, res, next) => {
     next(err);
   }
 });
-router.get('/',  async (req, res, next) => {
+router.get('/', auth,  async (req, res, next) => {
   try {
     await roomController.getRooms(req, res);
   } catch (err) {

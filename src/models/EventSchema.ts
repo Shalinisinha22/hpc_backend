@@ -2,16 +2,13 @@ import mongoose from "mongoose";
 
 const otherImageSchema = new mongoose.Schema({
   url: {
-    type: String
-
+    type: String,
   },
   name: {
-    type: String
-
+    type: String,
   },
   ext: {
-    type: String
-
+    type: String,
   },
 });
 
@@ -30,9 +27,9 @@ const eventSchema = new mongoose.Schema({
     url: String,
     ext: String,
   },
-  otherImage:[otherImageSchema],
+  otherImage: [otherImageSchema],
 
-  location: {
+  terms: {
     type: String,
     trim: true,
   },
@@ -40,15 +37,14 @@ const eventSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  eventColor: {
-    type: String,
-    default: "#1E40AF",
+
+  published: {
+    type: Boolean,
+    default: false,
   },
- 
-  status: {
-    type: String,
-    enum: ["active", "cancelled", "completed"],
-    default: "active",
+  featured: {
+    type: Boolean,
+    default: false,
   },
   cdate: {
     type: Date,
@@ -56,7 +52,6 @@ const eventSchema = new mongoose.Schema({
   },
 });
 
-const event =
-  mongoose.models.event || mongoose.model("event", eventSchema);
+const event = mongoose.models.event || mongoose.model("event", eventSchema);
 
 export default event;

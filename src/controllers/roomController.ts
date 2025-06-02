@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RoomService } from '../services/roomService';
 import { AuthRequest } from '../middleware/auth';
 
-// Ensure all methods return void and do not return res.status().json(...)
+
 export class RoomController {
   private roomService: RoomService;
 
@@ -13,7 +13,7 @@ export class RoomController {
   createRoom = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const room = await this.roomService.createRoom(req.body);
-      res.status(201).json(room);
+      res.status(201).json({room, message: 'Room created successfully'});
       return;
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -54,7 +54,7 @@ export class RoomController {
         res.status(404).json({ error: 'Room not found' });
         return;
       }
-      res.json(room);
+      res.json({room,message:"update successfully"});
       return;
     } catch (error: any) {
       res.status(400).json({ error: error.message });
