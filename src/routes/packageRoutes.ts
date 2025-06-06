@@ -1,10 +1,9 @@
 import express, { Response, NextFunction, RequestHandler } from 'express';
-import { RoomController } from '../controllers/roomController';
+import { PackageController } from '../controllers/packageController';
 import { auth, roleAuth, AuthRequest } from '../middleware/auth';
-import { setRoomUnavailability, getAvailableRooms } from '../controllers/roomAvailabilityController';
 
 const router = express.Router();
-const roomController = new RoomController();
+const packageController = new PackageController();
 
 const allowedRoles = ['admin', 'Front Office', 'HR'];
 
@@ -17,40 +16,42 @@ function asyncHandler(fn: (req: AuthRequest, res: Response, next: NextFunction) 
 
 router.post('/', auth, roleAuth(allowedRoles), async (req, res, next) => {
   try {
-    await roomController.createRoom(req, res);
+    await packageController.createPackage(req, res);
   } catch (err) {
     next(err);
   }
 });
-router.get('/', auth,  async (req, res, next) => {
+
+router.get('/', auth, async (req, res, next) => {
   try {
-    await roomController.getRooms(req, res);
+    await packageController.getPackages(req, res);
   } catch (err) {
     next(err);
   }
 });
+
 router.get('/:id', auth, async (req, res, next) => {
   try {
-    await roomController.getRoomById(req, res);
+    await packageController.getPackageById(req, res);
   } catch (err) {
     next(err);
   }
 });
+
 router.put('/:id', auth, roleAuth(allowedRoles), async (req, res, next) => {
   try {
-    await roomController.updateRoom(req, res);
+    await packageController.updatePackage(req, res);
   } catch (err) {
     next(err);
   }
 });
+
 router.delete('/:id', auth, roleAuth(allowedRoles), async (req, res, next) => {
   try {
-    await roomController.deleteRoom(req, res);
+    await packageController.deletePackage(req, res);
   } catch (err) {
     next(err);
   }
 });
-router.get('/status/available', auth, getAvailableRooms); // Changed path
-router.post('/status/unavailable', auth, roleAuth(allowedRoles), setRoomUnavailability);
 
 export default router;

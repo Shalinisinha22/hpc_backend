@@ -13,6 +13,8 @@ import promoCodeRoutes from "./routes/promoCodesRoutes"
 import eventRoutes from './routes/eventRoutes';
 import hallRoutes from './routes/hallRoutes';
 import offerRoutes from './routes/offerRoutes';
+import packageRoutes from './routes/packageRoutes';
+import eventBookingRoutes from './routes/eventBookingRoutes';
 import { logger } from './middleware/loggerMiddleware';
 import { errorHandler } from './middleware/errorMiddleware';
 
@@ -42,6 +44,9 @@ app.use('/api/v1/events', eventRoutes);
 
 app.use('/api/v1/offers', offerRoutes);
 
+app.use('/api/v1/packages', packageRoutes);
+
+app.use('/api/v1/event-bookings', eventBookingRoutes);
 
 app.use(errorHandler);
 
