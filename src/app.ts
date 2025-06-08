@@ -4,7 +4,7 @@ dotenv.config();
 import express from 'express';
 import connectDB from './config/database';
 
-
+import cors from 'cors'
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import roomRoutes from './routes/roomRoutes';
@@ -21,6 +21,44 @@ import { errorHandler } from './middleware/errorMiddleware';
 const app = express();
 
 connectDB();
+
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+        'https://yourdomain.com',
+        'https://www.yourdomain.com'
+      ]
+    : [ 
+         'http://192.168.233.1:3000',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173'
+      ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ]
+};
+
+
+
+app.use(cors(corsOptions));
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 
 
 app.use(express.json());

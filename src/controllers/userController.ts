@@ -16,8 +16,8 @@ export const loginUserController = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
         const result = await userService.loginUser(email, password);
-        res.status(200).json(result);
+        res.status(200).json({result,   success: true, });
     } catch (error: any) {
-        res.status(401).json({ message: error.message });
+        res.status(401).json({ message: error.message,   success: false });
     }
 };
