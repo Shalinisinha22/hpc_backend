@@ -50,6 +50,7 @@ router.delete('/:id', auth, roleAuth(allowedRoles), async (req, res, next) => {
     next(err);
   }
 });
+
 router.get('/status/available', auth, getAvailableRooms); // Changed path
 router.post('/status/unavailable', auth, roleAuth(allowedRoles), setRoomUnavailability);
 

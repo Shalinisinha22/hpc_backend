@@ -23,8 +23,16 @@ const createOffer = async (data: OfferInput) => {
 const getAllOffers = async () => {
   return await Offer.find().sort({ cdate: -1 });
 };
+const updateOffer = async (id: string, data: Partial<OfferInput>) => {
+  return await Offer.findByIdAndUpdate(id, data, { new: true });
+};
+const deleteOffer = async (id: string) => {
+  return await Offer.findByIdAndDelete(id);
+};
 
 export default {
   createOffer,
-  getAllOffers
+  getAllOffers,
+  updateOffer,
+  deleteOffer
 };

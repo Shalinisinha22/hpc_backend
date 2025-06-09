@@ -1,3 +1,4 @@
+import { get } from 'http';
 import PromoCode from '../models/PromoCode';
 
 interface PromoCodeInput {
@@ -15,6 +16,18 @@ const createPromoCode = async (data: PromoCodeInput) => {
   return await promoCode.save();
 };
 
+const getAllPromoCodes = async () => {
+  return await PromoCode.find()
+    .populate('room_id', 'room_title') 
+    .sort({ cdate: -1 });      
+}
+const deletePromoCode = async (id: string) => {
+  return await PromoCode.findByIdAndDelete(id);
+};
+
+
 export default {
   createPromoCode,
+  getAllPromoCodes,
+  deletePromoCode
 };

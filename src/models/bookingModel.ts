@@ -33,7 +33,7 @@ const BookingSchema: Schema = new Schema({
     saveMyInfo: { type: Boolean, required: true },
     paymentStatus: { 
         type: String, 
-        enum: ['confirmed', 'canceled', 'completed'], 
+        enum: ['confirmed', 'canceled', 'completed','pending'], 
         required: true 
     }
 }, {

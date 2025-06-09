@@ -11,13 +11,41 @@ export class RoomController {
   }
 
   createRoom = async (req: AuthRequest, res: Response): Promise<void> => {
+    console.log('Received room data:', req.body);
     try {
-      const room = await this.roomService.createRoom(req.body);
-      res.status(201).json({room, message: 'Room created successfully'});
-      return;
+      // Parse and validate the data
+      const roomData = {
+        ...req.body,
+        max_person: parseInt(req.body.max_person),
+        max_children: parseInt(req.body.max_children),
+        totalRooms: parseInt(req.body.totalRooms),
+        roomSize: parseInt(req.body.roomSize),
+        roomImage: typeof req.body.roomImage === 'string' 
+          ? JSON.parse(req.body.roomImage) 
+          : req.body.roomImage
+      };
+
+      // Validate required fields
+      if (!roomData.room_title || !roomData.roomImage) {
+        res.status(400).json({ 
+          error: 'Missing required fields',
+          success: false 
+        });
+        return;
+      }
+
+      const room = await this.roomService.createRoom(roomData);
+      res.status(201).json({
+        room, 
+        message: 'Room created successfully',
+        success: true
+      });
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
-      return;
+      console.error('Error creating room:', error);
+      res.status(400).json({ 
+        error: error.message || 'Failed to create room',
+        success: false 
+      });
     }
   };
 

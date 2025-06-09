@@ -38,6 +38,12 @@ const eventBookingSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
     default: 'pending'
   },
+  paymentStatus:{
+    type: String,
+    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    default: 'pending'
+  },
+ 
   hallId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Hall',
