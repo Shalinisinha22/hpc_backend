@@ -22,14 +22,14 @@ router.post('/', auth, roleAuth(allowedRoles), async (req, res, next) => {
     next(err);
   }
 });
-router.get('/', auth,  async (req, res, next) => {
+router.get('/',  async (req, res, next) => {
   try {
     await roomController.getRooms(req, res);
   } catch (err) {
     next(err);
   }
 });
-router.get('/:id', auth, async (req, res, next) => {
+router.get('/:id',async (req, res, next) => {
   try {
     await roomController.getRoomById(req, res);
   } catch (err) {

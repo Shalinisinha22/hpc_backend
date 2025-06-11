@@ -6,8 +6,8 @@ import { auth } from '../middleware/auth';
 const router = express.Router();
 
 router.post('/create', auth, roleAuth(['admin']), createHall);
-router.get('/',auth, getAllHalls);
-router.get('/:id', auth, getHallById);
+router.get('/', getAllHalls);
+router.get('/:id', getHallById);
 router.put('/:id', auth, roleAuth(['admin']),updateHall);
 router.delete('/:id', auth, roleAuth(['admin']), deleteHall )
 

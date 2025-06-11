@@ -26,6 +26,11 @@ const roomSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  pricePerNight: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   max_person: {
     type: Number,
     required: true
@@ -42,6 +47,26 @@ const roomSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+
+  // roomView: {
+  //   type: String,
+  //   enum: ['City View', 'Garden View', 'Pool View', 'Ocean View', 'Mountain View'],
+  //   required: true
+  // },
+  bedType: {
+    type: String,
+    enum: ['Single', 'Double', 'Queen', 'King', 'Twin'],
+    required: true
+  },
+  amenities: [{
+    type: String,
+    trim: true
+  }],
+  additionalDetails: [{
+    type: String,
+    trim: true
+  }],
+  // Existing fields
   status: {
     type: String,
     enum: ['available', 'unavailable'],
