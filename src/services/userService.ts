@@ -20,6 +20,7 @@ export default class UserService {
             name: user.name,
             email: user.email,
             role: user.role,
+            phone: user.phone,
             token,
             message: "Registration successful"
         };
@@ -41,6 +42,7 @@ export default class UserService {
             name: user.name,
             email: user.email,
             role: user.role,
+            phone:user.phone,
             token,
             message: "Login successful"
         };

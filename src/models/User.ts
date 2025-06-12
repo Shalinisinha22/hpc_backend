@@ -5,6 +5,7 @@ interface UserDocument extends Document {
   name: string;
   email: string;
   password: string;
+  phone:number;
   role: string;
   status: string;
   cdate: Date;
@@ -28,6 +29,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  phone:{
+    type: Number,
+    required: true,
+    unique: true
   },
   role: {
     type: String,
