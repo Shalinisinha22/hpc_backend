@@ -24,7 +24,7 @@ router.get('/user/:userId', auth, roleAuth(['admin']), async (req, res, next) =>
 });
 
 // Create booking
-router.post('/', auth, async (req, res, next) => {
+router.post('/', async (req, res, next) => {
     try {
         await bookingController.createBooking(req, res);
     } catch (err) {

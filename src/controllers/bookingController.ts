@@ -137,7 +137,7 @@ export class BookingController {
             
             const Booking = (await import('../models/bookingModel')).default;
             const Room = (await import('../models/Room')).default;
-            const User = (await import('../models/User')).default;
+            // const User = (await import('../models/User')).default;
             
             const bookings = await Booking.find({ 
                 $or: [
@@ -154,11 +154,11 @@ export class BookingController {
            
             const detailedBookings = await Promise.all(bookings.map(async (booking: any) => {
                 const room = await Room.findById(booking.roomId);
-                const user = await User.findById(booking.userId);
+                // const user = await User.findById(booking.userId);
                 return {
                     booking,
                     room,
-                    user
+                    // user
                 };
             }));
             res.json(detailedBookings);

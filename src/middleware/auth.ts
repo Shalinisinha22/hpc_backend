@@ -10,45 +10,52 @@ export interface AuthRequest extends Request {
 
 export const auth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header('Authorization')?.replace('Bearer ', '')
+    
     if (!token) {
-      console.error('No token provided');
-      res.status(401).json({ error: 'No token provided' });
-      return;
+      throw new Error('No token provided')
     }
+
     if (!JWT_SECRET) {
-      console.error('JWT_SECRET is not defined');
-      res.status(500).json({ error: 'JWT_SECRET is not defined' });
-      return;
+      throw new Error('JWT_SECRET is not defined')
     }
-    let decoded: any;
+
+    let decoded: any
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = jwt.verify(token, JWT_SECRET)
     } catch (err) {
-      console.error('Invalid token:', err);
-      res.status(401).json({ error: 'Invalid token' });
-      return;
+      if (err instanceof jwt.TokenExpiredError) {
+        res.status(401).json({
+          error: 'Token expired',
+          code: 'TOKEN_EXPIRED',
+          expiredAt: err.expiredAt
+        })
+        return
+      }
+      throw new Error('Invalid token')
     }
+
     if (!decoded || typeof decoded !== 'object' || !('id' in decoded)) {
-      console.error('Invalid token payload:', decoded);
-      res.status(401).json({ error: 'Invalid token payload' });
-      return;
+      throw new Error('Invalid token payload')
     }
-    const user = await User.findById(decoded.id);
+
+    const user = await User.findById(decoded.id)
     if (!user) {
-      console.error('User not found for token:', decoded.id);
-      res.status(401).json({ error: 'User not found' });
-      return;
+      throw new Error('User not found')
     }
-    req.user = user;
-    next();
+
+    req.user = user
+    next()
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('JWT auth error:', message);
-    res.status(401).json({ error: 'Please authenticate', details: message });
-    return;
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('JWT auth error:', message)
+    res.status(401).json({ 
+      error: 'Authentication failed', 
+      message,
+      code: 'AUTH_FAILED'
+    })
   }
-};
+}
 
 export const adminAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (!req.user) {
