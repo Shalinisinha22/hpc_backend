@@ -21,14 +21,16 @@ import { errorHandler } from './middleware/errorMiddleware';
 const app = express();
 
 connectDB();
+ // origin: process.env.NODE_ENV === 'production'
+  //   ? [
+  //       'https://yourdomain.com',
+  //       'https://www.yourdomain.com'
+  //     ]
+  //   : 
 
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? [
-        'https://yourdomain.com',
-        'https://www.yourdomain.com'
-      ]
-    : [ 
+ 
+    [ 
          'http://192.168.233.1:3000',
         'http://localhost:3000',
         'http://localhost:3001',

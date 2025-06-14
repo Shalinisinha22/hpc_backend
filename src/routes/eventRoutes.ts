@@ -1,12 +1,14 @@
-import { Router } from 'express';
-import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../controllers/eventController';
-import { auth, roleAuth } from '../middleware/auth';
+import express from 'express';
+import { EventController } from '../controllers/eventController';
+import { auth } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
+const eventController = new EventController();
 
-router.post('/', auth, roleAuth(['admin']), createEvent);
-router.get('/', auth, getAllEvents);
-router.put('/:id', auth, roleAuth(['admin']), updateEvent);
-router.delete('/:id', auth, roleAuth(['admin']), deleteEvent);
+router.get('/', eventController.getAllEvents);
+router.get('/:id', eventController.getEventById);
+router.post('/', auth, eventController.createEvent);
+router.put('/:id', auth, eventController.updateEvent);
+router.delete('/:id', auth, eventController.deleteEvent);
 
 export default router;
