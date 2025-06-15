@@ -1,32 +1,69 @@
-import { get } from 'mongoose';
 import Hall, { HallDocument } from '../models/Hall';
 
-const createHall = async (hallData: Partial<HallDocument>): Promise<HallDocument> => {
-  const newHall = new Hall(hallData);
-  return await newHall.save();
-};
-
-const getAllHalls = async (): Promise<HallDocument[]> => {
-  return await Hall.find();
-};
-
-const getHallById = async (id: string): Promise<HallDocument | null> => {
-  return await Hall.findById(id);   
+interface HallInput {
+  hall_name?: string;
+  location?: string;
+  capacity?: number;
+  price?: number;
+  description?: string;
+  amenities?: string[];
+  hallImage?: {
+    url: string;
+    name: string;
+    ext: string;
+  }[];
+  available?: boolean;
+  featured?: boolean;
 }
 
-const updateHall = async (id: string, hallData: Partial<HallDocument>): Promise<HallDocument | null> => {
-  return await Hall.findByIdAndUpdate(id, hallData, { new: true });
-};
+export class HallService {
+  async createHall(data: HallInput): Promise<HallDocument> {
+    try {
+      const hall = new Hall(data);
+      return await hall.save();
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create hall');
+    }
+  }
 
-const deleteHall = async (id: string): Promise<HallDocument | null> => {
-  return await Hall.findByIdAndDelete(id);    
+  async getAllHalls(): Promise<HallDocument[]> {
+    try {
+      return await Hall.find().sort({ createdAt: -1 });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch halls');
+    }
+  }
 
+  async getHallById(id: string): Promise<HallDocument | null> {
+    try {
+      const hall = await Hall.findById(id);
+      return hall;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch hall');
+    }
+  }
+
+  async updateHall(id: string, data: Partial<HallInput>): Promise<HallDocument | null> {
+    try {
+      const hall = await Hall.findByIdAndUpdate(
+        id, 
+        { $set: data }, 
+        { new: true, runValidators: true }
+      );
+      return hall;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update hall');
+    }
+  }
+
+  async deleteHall(id: string): Promise<HallDocument | null> {
+    try {
+      const hall = await Hall.findByIdAndDelete(id);
+      return hall;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete hall');
+    }
+  }
 }
 
-export default {
-  createHall,
-  getAllHalls,
-  updateHall,
-  getHallById,
-  deleteHall
-};
+export default HallService;

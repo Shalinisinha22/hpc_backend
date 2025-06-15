@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface Booking extends Document {
   bookingId: string;
-  userId: string;
+  userId?: string;
   roomId: string;
   checkInDate: Date;
   checkOutDate: Date;
@@ -23,6 +23,8 @@ export interface Booking extends Document {
     paidAmount: number;
     paidAt: Date;
   };
+  isGuest: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +34,6 @@ const BookingSchema: Schema = new Schema(
     bookingId: {
       type: String,
       required: true,
-      unique: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
@@ -73,6 +74,11 @@ const BookingSchema: Schema = new Schema(
       paidAmount: Number,
       paidAt: Date,
     },
+    isGuest:{
+      type: Boolean,
+      default: false,
+      required: true,
+    }
   },
   {
     timestamps: true,

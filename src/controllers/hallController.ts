@@ -1,61 +1,107 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import HallService from '../services/hallService';
+import { AuthRequest } from '../middleware/auth';
 
-export const createHall = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const hallData = req.body;
-    const newHall = await HallService.createHall(hallData);
-    res.status(201).json({ success: true, data: newHall });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+export class HallController {
+  private hallService: HallService;
 
-export const getAllHalls = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const halls = await HallService.getAllHalls();
-    res.status(200).json({ success: true, data: halls });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+  constructor() {
+    this.hallService = new HallService();
   }
-};
-export const getHallById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const hallId = req.params.id;
-    const hall = await HallService.getHallById(hallId);
-    if (!hall) {
-      res.status(404).json({ success: false, message: 'Hall not found' });
+
+  createHall = async (req: AuthRequest, res: Response): Promise<void> => {
+    console.log('Received hall data:', req.body);
+    try {
+      // Parse and validate the data
+      const hallData = {
+        ...req.body,
+        capacity: parseInt(req.body.capacity),
+        price: parseFloat(req.body.price),
+        hallImage: typeof req.body.hallImage === 'string' 
+          ? JSON.parse(req.body.hallImage) 
+          : req.body.hallImage
+      };
+
+      // Validate required fields
+      if (!hallData.hall_name || !hallData.location) {
+        res.status(400).json({ 
+          error: 'Missing required fields: hall_name and location are required',
+          success: false 
+        });
+        return;
+      }
+
+      const hall = await this.hallService.createHall(hallData);
+      res.status(201).json({
+        hall, 
+        message: 'Hall created successfully',
+        success: true
+      });
+    } catch (error: any) {
+      console.error('Error creating hall:', error);
+      res.status(400).json({ 
+        error: error.message || 'Failed to create hall',
+        success: false 
+      });
+    }
+  };
+
+  getHalls = async (_req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const halls = await this.hallService.getAllHalls();
+      res.json(halls);
+      return;
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
       return;
     }
-    res.status(200).json({ success: true, data: hall });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  };
+
+  getHallById = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const hall = await this.hallService.getHallById(req.params.id);
+      if (!hall) {
+        res.status(404).json({ error: 'Hall not found' });
+        return;
+      }
+      res.json(hall);
+      return;
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+  };
+
+  updateHall = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const hall = await this.hallService.updateHall(req.params.id, req.body);
+      if (!hall) {
+        res.status(404).json({ error: 'Hall not found' });
+        return;
+      }
+      res.json({
+        hall,
+        message: "Hall updated successfully"
+      });
+      return;
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+  };
+
+  deleteHall = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const deleted = await this.hallService.deleteHall(req.params.id);
+      if (!deleted) {
+        res.status(404).json({ error: 'Hall not found' });
+        return;
+      }
+      res.json({ message: 'Hall deleted successfully' });
+      return;
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+  };
 }
-export const updateHall = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const hallId = req.params.id;
-    const updatedHall = await HallService.updateHall(hallId, req.body);
-    if (!updatedHall) {
-      res.status(404).json({ success: false, message: 'Hall not found' });
-      return;
-    }
-    res.status(200).json({ success: true, data: updatedHall });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-}
-
-export const deleteHall = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const hallId = req.params.id;
-    const deletedHall = await HallService.deleteHall(hallId);
-    if (!deletedHall) {
-      res.status(404).json({ success: false, message: 'Hall not found' });
-      return;
-    }
-    res.status(200).json({ success: true, message: 'Hall deleted successfully' });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-} 

@@ -42,10 +42,56 @@ export default class UserService {
             name: user.name,
             email: user.email,
             role: user.role,
-            phone:user.phone,
+            phone: user.phone,
             token,
             message: "Login successful"
         };
+    }
+
+    async getUsers() {
+        const users = await User.find({}, { password: 0 }); // Exclude password field
+        return users;
+    }
+
+    async getUserById(id: string) {
+        const user = await User.findById(id, { password: 0 }); // Exclude password field
+        return user;
+    }
+
+    async updateUser(id: string, updateData: any) {
+        // Remove password from update data if present (use changePassword method instead)
+        const { password, ...safeUpdateData } = updateData;
+        
+        const user = await User.findByIdAndUpdate(
+            id, 
+            safeUpdateData, 
+            { new: true, select: '-password' }
+        );
+        return user;
+    }
+
+    async deleteUser(id: string) {
+        const user = await User.findByIdAndDelete(id);
+        return user;
+    }
+
+    async changePassword(userId: string, currentPassword: string, newPassword: string) {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            throw new Error('Current password is incorrect');
+        }
+
+        // Hash the new password
+        const saltRounds = 10;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
+        return true;
     }
 
     private generateToken(userId: string): string {

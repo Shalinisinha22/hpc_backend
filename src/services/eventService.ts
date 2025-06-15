@@ -14,25 +14,39 @@ interface IMainImage {
 }
 
 export interface IEvent extends Document {
-  event_name: string;
-  short_intro: string;
-  main_img: IMainImage;
-  otherImage: IOtherImage[];
+  title?: string;
+  event_name?: string;
+  short_intro?: string;
+  main_img?: IMainImage;
+  otherImage?: IOtherImage[];
+  eventImage?: IOtherImage[];
   terms?: string;
   desc?: string;
+  description?: string;
   published?: boolean;
   featured?: boolean;
   cdate?: Date;
+  date?: Date;
+  location?: string;
+  capacity?: number;
+  price?: number;
 }
 
 interface EventInput {
-  event_name: string;
-  short_intro: string;
-  main_img: {
+  title?: string;
+  event_name?: string;
+  short_intro?: string;
+  description?: string;
+  main_img?: {
     name: string;
     url: string;
     ext: string;
   };
+  eventImage?: {
+    url: string;
+    name: string;
+    ext: string;
+  }[];
   otherImage?: {
     url: string;
     name: string;
@@ -42,6 +56,10 @@ interface EventInput {
   desc?: string;
   published?: boolean;
   featured?: boolean;
+  date?: Date;
+  location?: string;
+  capacity?: number;
+  price?: number;
 }
 
 export class EventService {
@@ -49,16 +67,25 @@ export class EventService {
     try {
       const event = new Event(data);
       return await event.save();
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create event');
     }
   }
 
   async getAllEvents(): Promise<IEvent[]> {
     try {
-      return await Event.find().sort({ cdate: -1 });
-    } catch (error) {
-      throw error;
+      return await Event.find().sort({ cdate: -1, date: -1 });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch events');
+    }
+  }
+
+  async getEventById(id: string): Promise<IEvent | null> {
+    try {
+      const event = await Event.findById(id);
+      return event;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch event');
     }
   }
 
@@ -69,36 +96,18 @@ export class EventService {
         { $set: data }, 
         { new: true, runValidators: true }
       );
-      if (!event) {
-        throw new Error('Event not found');
-      }
       return event;
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update event');
     }
   }
 
   async deleteEvent(id: string): Promise<IEvent | null> {
     try {
       const event = await Event.findByIdAndDelete(id);
-      if (!event) {
-        throw new Error('Event not found');
-      }
       return event;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getEventById(id: string): Promise<IEvent | null> {
-    try {
-      const event = await Event.findById(id);
-      if (!event) {
-        throw new Error('Event not found');
-      }
-      return event;
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete event');
     }
   }
 }

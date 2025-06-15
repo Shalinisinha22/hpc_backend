@@ -1,71 +1,29 @@
-import { Router } from 'express';
+import express from 'express';
 import { BookingController } from '../controllers/bookingController';
 import { auth, roleAuth } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 const bookingController = new BookingController();
 
-// My bookings route
-router.get('/my', auth, async (req, res, next) => {
-    try {
-        await bookingController.getBookingsByUserToken(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+// Create booking (public)
+router.post('/', bookingController.createBooking);
+
+// My bookings route (authenticated users)
+router.get('/my', auth, bookingController.getBookingsByUserToken);
 
 // User bookings route (admin only)
-router.get('/user/:userId', auth, roleAuth(['admin']), async (req, res, next) => {
-    try {
-        await bookingController.getBookingsByUserId(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
-
-// Create booking
-router.post('/', async (req, res, next) => {
-    try {
-        await bookingController.createBooking(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.get('/user/:userId', auth, roleAuth(['admin']), bookingController.getBookingsByUserId);
 
 // Get all bookings (admin only)
-router.get('/', auth, roleAuth(['admin']), async (req, res, next) => {
-    try {
-        await bookingController.getAllBookings(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.get('/', auth, roleAuth(['admin']), bookingController.getAllBookings);
 
 // Get specific booking (admin only)
-router.get('/:id', auth, roleAuth(['admin']), async (req, res, next) => {
-    try {
-        await bookingController.getBooking(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.get('/:id', auth, roleAuth(['admin']), bookingController.getBooking);
 
 // Update booking (admin only)
-router.put('/:id', auth, roleAuth(['admin']), async (req, res, next) => {
-    try {
-        await bookingController.updateBooking(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.put('/:id', auth, roleAuth(['admin']), bookingController.updateBooking);
 
 // Delete booking (admin only)
-router.delete('/:id', auth, roleAuth(['admin']), async (req, res, next) => {
-    try {
-        await bookingController.deleteBooking(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.delete('/:id', auth, roleAuth(['admin']), bookingController.deleteBooking);
 
 export default router;

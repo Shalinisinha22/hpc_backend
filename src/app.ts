@@ -6,8 +6,8 @@ import connectDB from './config/database';
 
 import cors from 'cors'
 import userRoutes from './routes/userRoutes';
-import authRoutes from './routes/authRoutes';
 import roomRoutes from './routes/roomRoutes';
+import roomAvailabilityRoutes from './routes/roomAvailabilityRoutes';
 import bookingRoutes from './routes/bookingRoutes';
 import promoCodeRoutes from "./routes/promoCodesRoutes"
 import eventRoutes from './routes/eventRoutes';
@@ -29,15 +29,7 @@ connectDB();
   //   : 
 
 const corsOptions = {
- 
-    [ 
-         'http://192.168.233.1:3000',
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173'
-      ],
+   origin:"*",
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -69,23 +61,13 @@ app.use(logger);
 
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/rooms', roomRoutes);
+app.use('/api/v1/room-availability', roomAvailabilityRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
-
-
 app.use('/api/v1/halls', hallRoutes);
-
-
 app.use('/api/v1/promocodes', promoCodeRoutes);
-
-
 app.use('/api/v1/events', eventRoutes);
-
-
-
 app.use('/api/v1/offers', offerRoutes);
-
 app.use('/api/v1/packages', packageRoutes);
-
 app.use('/api/v1/event-bookings', eventBookingRoutes);
 
 app.use(errorHandler);

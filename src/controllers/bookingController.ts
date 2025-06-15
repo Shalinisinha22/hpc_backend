@@ -1,40 +1,62 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BookingService } from '../services/bookingService';
 import { AuthRequest } from '../middleware/auth';
 
 export class BookingController {
     private bookingService: BookingService;
+    
     constructor() {
         this.bookingService = new BookingService();
-    }    async createBooking(req: AuthRequest, res: Response): Promise<void> {
+        // Bind all methods to maintain 'this' context
+        this.createBooking = this.createBooking.bind(this);
+        this.getBooking = this.getBooking.bind(this);
+        this.updateBooking = this.updateBooking.bind(this);
+        this.deleteBooking = this.deleteBooking.bind(this);
+        this.getAllBookings = this.getAllBookings.bind(this);
+        this.getBookingsByUserId = this.getBookingsByUserId.bind(this);
+        this.getBookingsByUserToken = this.getBookingsByUserToken.bind(this);
+    }    
+
+    // Convert methods to arrow functions to preserve 'this' context
+    createBooking = async (req: AuthRequest, res: Response): Promise<void> => {
         try {
             const bookingData = {
                 ...req.body,
-                userId: req.user?._id.toString() 
+                ...((!req.body.isGuest && req.user) && { userId: req.user._id.toString() }),
+                noOfGuests: {
+                    adults: parseInt(req.body.noOfGuests.adults),
+                    children: parseInt(req.body.noOfGuests.children || 0)
+                },
+                noOfRooms: parseInt(req.body.noOfRooms),
+                totalPrice: parseFloat(req.body.totalPrice)
             };
 
-            const booking = await this.bookingService.createBooking(bookingData);
-            const data=   {
-                _id: booking._id,
-                bookingId: booking.bookingId,
-                userId: booking.userId,
-                roomId: booking.roomId,
-                checkInDate: booking.checkInDate,
-                checkOutDate: booking.checkOutDate,
-                adults: booking.noOfGuests.adults,
-                children: booking.noOfGuests.children,
-                fullName: booking.fullName,
-                email: booking.email,
-                phone: booking.phone,
-                paymentStatus: booking.paymentStatus,
-                createdAt: booking.createdAt,
-                updatedAt: booking.updatedAt
+            // Validate required fields
+            const requiredFields = [
+                'roomId', 'checkInDate', 'checkOutDate', 
+                'fullName', 'email', 'phone', 'totalPrice'
+            ];
+
+            for (const field of requiredFields) {
+                if (!bookingData[field]) {
+                    throw new Error(`Missing required field: ${field}`);
+                }
             }
-            res.status(201).json({data,message: 'Booking created successfully'});
+
+            const booking = await this.bookingService.createBooking(bookingData);
+            res.status(201).json({
+                success: true,
+                message: 'Booking created successfully',
+                booking
+            });
         } catch (error: unknown) {
-            res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+            console.error('Booking creation error:', error);
+            res.status(400).json({ 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            });
         }
-    }
+    };
 
     async getBooking(req: AuthRequest, res: Response): Promise<void> {
    
@@ -110,6 +132,7 @@ export class BookingController {
     }
 
     async getBookingsByUserId(req: AuthRequest, res: Response): Promise<void> {
+        console.log('getBookingsByUserId called with userId:', req.params.userId);
         try {
             const bookings = await this.bookingService.getBookingsByUserId(req.params.userId);
             if (!bookings || bookings.length === 0) {

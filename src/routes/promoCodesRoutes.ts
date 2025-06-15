@@ -1,11 +1,20 @@
-import { Router } from 'express';
-import { createPromoCode, deletePromoCode, getAllPromoCodes } from '../controllers/promoCodeController';
-import { roleAuth } from '../middleware/auth';
-import { auth } from '../middleware/auth';
-const router = Router();
+import express from 'express';
+import { PromoCodeController } from '../controllers/promoCodeController';
+import { auth, roleAuth } from '../middleware/auth';
 
-router.post('/', auth, roleAuth(['admin']), createPromoCode);
-router.get('/', auth, getAllPromoCodes ),
-router.delete("/:id", auth, roleAuth(['admin']), deletePromoCode)
+const router = express.Router();
+const promoCodeController = new PromoCodeController();
+
+// Public routes
+router.post('/validate', promoCodeController.validatePromoCode);
+
+// Protected routes (authentication required)
+router.get('/', auth, promoCodeController.getPromoCodes);
+router.get('/:id', auth, promoCodeController.getPromoCodeById);
+
+// Admin routes (admin only)
+router.post('/', auth, roleAuth(['admin']), promoCodeController.createPromoCode);
+router.put('/:id', auth, roleAuth(['admin']), promoCodeController.updatePromoCode);
+router.delete('/:id', auth, roleAuth(['admin']), promoCodeController.deletePromoCode);
 
 export default router;
