@@ -51,11 +51,17 @@ export class RoomController {
 
   getRooms = async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
+      console.log('getRooms called');
       const rooms = await this.roomService.getRooms();
+      console.log('Rooms fetched successfully, count:', rooms.length);
       res.json(rooms);
       return;
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      console.error('Error in getRooms:', error);
+      res.status(500).json({ 
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
       return;
     }
   };

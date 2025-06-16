@@ -58,6 +58,29 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    mongoUri: process.env.MONGO_URI ? 'Set' : 'Not set'
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Hotel Booking API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      rooms: '/api/v1/rooms',
+      users: '/api/v1/users',
+      bookings: '/api/v1/bookings'
+    }
+  });
+});
 
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/rooms', roomRoutes);
