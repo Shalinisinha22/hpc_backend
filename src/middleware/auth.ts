@@ -82,3 +82,59 @@ export const roleAuth = (roles: string[]) => {
     next();
   };
 };
+
+export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    console.log('OptionalAuth middleware called');
+    console.log('Authorization header:', req.header('Authorization'));
+    console.log('Token in body:', req.body.token);
+    
+    const token = req.header('Authorization')?.replace('Bearer ', '') || req.body.token;
+    
+    console.log('Extracted token:', token ? 'Token found' : 'No token');
+    
+    if (!token) {
+      console.log('No token provided, continuing without authentication');
+      next();
+      return;
+    }
+
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      next();
+      return;
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+      console.log('Token decoded successfully:', decoded);
+    } catch (err) {
+      console.error('Token verification failed:', err);
+      // Continue without authentication if token is invalid
+      next();
+      return;
+    }
+
+    if (!decoded || typeof decoded !== 'object' || !('id' in decoded)) {
+      console.error('Invalid token payload');
+      next();
+      return;
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      console.error('User not found for token');
+      next();
+      return;
+    }
+
+    console.log('User found and authenticated:', user._id);
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Optional auth error:', error);
+    // Continue without authentication on any error
+    next();
+  }
+};

@@ -20,9 +20,23 @@ export class BookingController {
     // Convert methods to arrow functions to preserve 'this' context
     createBooking = async (req: AuthRequest, res: Response): Promise<void> => {
         try {
+            console.log('BookingController: createBooking called');
+            console.log('req.user:', req.user ? 'User object exists' : 'No user object');
+            console.log('req.body.isGuest:', req.body.isGuest);
+            console.log('req.body.token:', req.body.token ? 'Token exists in body' : 'No token in body');
+            
+            // Determine userId based on authentication status
+            let userId = undefined;
+            if (req.user && !req.body.isGuest) {
+                userId = req.user._id.toString();
+                console.log('User authenticated, userId set to:', userId);
+            } else {
+                console.log('User not authenticated or is guest');
+            }
+
             const bookingData = {
                 ...req.body,
-                ...((!req.body.isGuest && req.user) && { userId: req.user._id.toString() }),
+                userId: userId,
                 noOfGuests: {
                     adults: parseInt(req.body.noOfGuests.adults),
                     children: parseInt(req.body.noOfGuests.children || 0)
@@ -30,6 +44,9 @@ export class BookingController {
                 noOfRooms: parseInt(req.body.noOfRooms),
                 totalPrice: parseFloat(req.body.totalPrice)
             };
+
+            console.log('Creating booking with userId:', userId);
+            console.log('Booking data:', bookingData);
 
             // Validate required fields
             const requiredFields = [
@@ -44,11 +61,19 @@ export class BookingController {
             }
 
             const booking = await this.bookingService.createBooking(bookingData);
-            res.status(201).json({
+            
+            // Include userId in response if user is authenticated
+            const response: any = {
                 success: true,
                 message: 'Booking created successfully',
                 booking
-            });
+            };
+
+            if (userId) {
+                response.userId = userId;
+            }
+
+            res.status(201).json(response);
         } catch (error: unknown) {
             console.error('Booking creation error:', error);
             res.status(400).json({ 

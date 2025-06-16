@@ -1,12 +1,12 @@
 import express from 'express';
 import { BookingController } from '../controllers/bookingController';
-import { auth, roleAuth } from '../middleware/auth';
+import { auth, roleAuth, optionalAuth } from '../middleware/auth';
 
 const router = express.Router();
 const bookingController = new BookingController();
 
-// Create booking (public)
-router.post('/', bookingController.createBooking);
+// Create booking (public with optional auth)
+router.post('/', optionalAuth, bookingController.createBooking);
 
 // My bookings route (authenticated users)
 router.get('/my', auth, bookingController.getBookingsByUserToken);
