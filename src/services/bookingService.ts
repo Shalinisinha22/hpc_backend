@@ -45,8 +45,16 @@ export class BookingService {
         }
     }
 
-    public async getBooking(userId: string) {
-        return await Booking.findOne({ userId });
+    public async getBooking(bookingId: string) {
+        try {
+            console.log('BookingService: getBooking called with bookingId:', bookingId);
+            const booking = await Booking.findOne({ bookingId });
+            console.log('BookingService: Found booking:', booking ? 'Yes' : 'No');
+            return booking;
+        } catch (error) {
+            console.error('Error in BookingService.getBooking:', error);
+            throw error;
+        }
     }    public async getAllBookings(): Promise<DetailedBooking[]> {
         const bookings = await Booking.find()
             .select({
