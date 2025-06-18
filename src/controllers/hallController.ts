@@ -15,17 +15,20 @@ export class HallController {
       // Parse and validate the data
       const hallData = {
         ...req.body,
-        capacity: parseInt(req.body.capacity),
-        price: parseFloat(req.body.price),
-        hallImage: typeof req.body.hallImage === 'string' 
-          ? JSON.parse(req.body.hallImage) 
-          : req.body.hallImage
+        max_capacity: parseInt(req.body.max_capacity) || req.body.max_capacity,
+        length: parseFloat(req.body.length) || req.body.length,
+        breadth: parseFloat(req.body.breadth) || req.body.breadth,
+        height: parseFloat(req.body.height) || req.body.height,
+        area: parseFloat(req.body.area) || req.body.area,
+        hall_image: typeof req.body.hall_image === 'string' 
+          ? JSON.parse(req.body.hall_image) 
+          : req.body.hall_image
       };
 
       // Validate required fields
-      if (!hallData.hall_name || !hallData.location) {
+      if (!hallData.hall_name || !hallData.max_capacity || !hallData.short_intro || !hallData.length || !hallData.breadth || !hallData.height || !hallData.area) {
         res.status(400).json({ 
-          error: 'Missing required fields: hall_name and location are required',
+          error: 'Missing required fields: hall_name, max_capacity, short_intro, length, breadth, height, and area are required',
           success: false 
         });
         return;

@@ -24,10 +24,12 @@ export interface HallDocument extends Document {
   height: number;
   area: number;
   guest_entry_point?: string;
+  seating: Seating;
+   additionalDetails: [{
+    type: String }],
+  hall_image: HallImage[];
   phone?: string;
   email?: string;
-  seating: Seating;
-  hall_image: HallImage[];
   status: 'available' | 'unavailable' | 'maintenance';
   cdate: Date;
 }
@@ -56,6 +58,10 @@ const hallSchema = new Schema<HallDocument>({
   height: { type: Number, required: true },
   area: { type: Number, required: true },
   guest_entry_point: { type: String, trim: true },
+  additionalDetails: [{
+    type: String,
+    trim: true
+  }],
   phone: { type: String, trim: true },
   email: { type: String, trim: true, lowercase: true },
   seating: seatingSchema,

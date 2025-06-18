@@ -2,18 +2,30 @@ import Hall, { HallDocument } from '../models/Hall';
 
 interface HallInput {
   hall_name?: string;
-  location?: string;
-  capacity?: number;
-  price?: number;
-  description?: string;
-  amenities?: string[];
-  hallImage?: {
+  max_capacity?: number;
+  short_intro?: string;
+  desc?: string;
+  length?: number;
+  breadth?: number;
+  height?: number;
+  area?: number;
+  guest_entry_point?: string;
+  phone?: string;
+  email?: string;
+  seating?: {
+    theatre: number;
+    ushaped: number;
+    boardroom: number;
+    classroom: number;
+    reception: number;
+  };
+  hall_image?: {
     url: string;
     name: string;
     ext: string;
   }[];
-  available?: boolean;
-  featured?: boolean;
+  additionalDetails?: string[];
+  status?: 'available' | 'unavailable' | 'maintenance';
 }
 
 export class HallService {
@@ -28,7 +40,7 @@ export class HallService {
 
   async getAllHalls(): Promise<HallDocument[]> {
     try {
-      return await Hall.find().sort({ createdAt: -1 });
+      return await Hall.find().sort({ cdate: -1 });
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch halls');
     }
