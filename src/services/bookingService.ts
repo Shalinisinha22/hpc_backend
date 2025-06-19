@@ -1,14 +1,15 @@
+import { stat } from 'fs';
 import Booking, { Booking as BookingType } from '../models/bookingModel';
 
 
 interface DetailedBooking {
-    confirmation: string;
     bookingId: string;
     name: string;
     email: string;
     contact: string;
     bookingDate: Date;
     paymentStatus: string;
+    status: string;
 }
 
 export class BookingService {    
@@ -45,17 +46,27 @@ export class BookingService {
         }
     }
 
-    public async getBooking(bookingId: string) {
+    public async getBooking(id: string) {
         try {
-            console.log('BookingService: getBooking called with bookingId:', bookingId);
-            const booking = await Booking.findOne({ bookingId });
+            console.log('BookingService: getBooking called with id:', id);
+            
+            // Try to find by custom bookingId first
+            let booking = await Booking.findOne({ bookingId: id });
+            
+            // If not found and id looks like MongoDB ObjectId, try finding by _id
+            if (!booking && id.match(/^[0-9a-fA-F]{24}$/)) {
+                booking = await Booking.findById(id);
+            }
+            
             console.log('BookingService: Found booking:', booking ? 'Yes' : 'No');
             return booking;
         } catch (error) {
             console.error('Error in BookingService.getBooking:', error);
             throw error;
         }
-    }    public async getAllBookings(): Promise<DetailedBooking[]> {
+    }
+
+    public async getAllBookings(): Promise<DetailedBooking[]> {
         const bookings = await Booking.find()
             .select({
                 bookingId: 1,
@@ -63,31 +74,69 @@ export class BookingService {
                 email: 1,
                 phone: 1,
                 paymentStatus: 1,
+                status: 1,
                 createdAt: 1
             })
             .sort({ createdAt: -1 }); 
 
         return bookings.map(booking => ({
-            confirmation: booking.bookingId,
             bookingId: booking.bookingId,
             name: booking.fullName,
             email: booking.email,
             contact: booking.phone,
             bookingDate: booking.createdAt,
-            paymentStatus: booking.paymentStatus
+            paymentStatus: booking.paymentStatus,
+            status: booking.status
         }));
     }
 
-    public async updateBooking(bookingId: string, updatedBooking: Partial<BookingType>) {
-        return await Booking.findOneAndUpdate({ bookingId }, updatedBooking, { new: true });
+    public async updateBooking(id: string, updatedBooking: Partial<BookingType>) {
+        // Try to find by custom bookingId first
+        let booking = await Booking.findOneAndUpdate({ bookingId: id }, updatedBooking, { new: true });
+        
+        // If not found and id looks like MongoDB ObjectId, try finding by _id
+        if (!booking && id.match(/^[0-9a-fA-F]{24}$/)) {
+            booking = await Booking.findByIdAndUpdate(id, updatedBooking, { new: true });
+        }
+        
+        return booking;
     }
 
-    public async deleteBooking(bookingId: string) {
-        const result = await Booking.deleteOne({ bookingId });
+    public async deleteBooking(id: string) {
+        // Try to delete by custom bookingId first
+        let result = await Booking.deleteOne({ bookingId: id });
+        
+        // If not found and id looks like MongoDB ObjectId, try deleting by _id
+        if (result.deletedCount === 0 && id.match(/^[0-9a-fA-F]{24}$/)) {
+            result = await Booking.findByIdAndDelete(id);
+            return !!result;
+        }
+        
         return !!result.deletedCount && result.deletedCount > 0;
     }
 
     public async getBookingsByUserId(userId: string) {
         return await Booking.find({ userId });
+    }
+
+    public async getCountOfBookings(): Promise<number> {
+        try {
+            const count = await Booking.countDocuments({ paymentStatus: { $ne: 'cancelled' } });
+            console.log('Total bookings count (excluding cancelled):', count);
+            return count;
+        } catch (error) {
+            console.error('Error fetching bookings count:', error);
+            throw error;
+        }
+    }
+
+    public async getFailedBookings(): Promise<BookingType[]> {
+        try {
+            const failedBookings = await Booking.find({ paymentStatus: 'failed' , status: 'canceled' });
+            return failedBookings;
+        } catch (error) {
+            console.error('Error fetching failed bookings:', error);
+            throw error;
+        }
     }
 }

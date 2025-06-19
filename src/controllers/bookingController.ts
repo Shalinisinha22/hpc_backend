@@ -15,6 +15,9 @@ export class BookingController {
         this.getAllBookings = this.getAllBookings.bind(this);
         this.getBookingsByUserId = this.getBookingsByUserId.bind(this);
         this.getBookingsByUserToken = this.getBookingsByUserToken.bind(this);
+        this.getCountOfBookings = this.getCountOfBookings.bind(this);
+        this.getTotalRevenue= this.getTotalRevenue.bind(this);
+        this.getFailedBookings = this.getFailedBookings.bind(this);
     }    
 
     // Convert methods to arrow functions to preserve 'this' context
@@ -213,4 +216,52 @@ export class BookingController {
             res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
         }
     }
+
+
+    async getCountOfBookings(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            if (!req.user || req.user.role !== 'admin') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
+            
+            const count = await this.bookingService.getCountOfBookings();
+            res.json({ count });
+        } catch (error: unknown) {
+            res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+        }
+    }
+
+    async getTotalRevenue(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            if (!req.user || req.user.role !== 'admin') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
+            
+            const totalRevenue = await this.bookingService.getTotalRevenue();
+            res.json({ totalRevenue });
+        } catch (error: unknown) {
+            res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+        }
+    }
+
+    async getFailedBookings(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            if (!req.user || req.user.role !== 'admin') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
+            
+            const failedBookings = await this.bookingService.getFailedBookings();
+            res.json({
+                status: 'success',
+                data: failedBookings,
+                message: 'Failed bookings retrieved successfully'
+            });
+        } catch (error: unknown) {
+            res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+        }
+    }
+    
 }

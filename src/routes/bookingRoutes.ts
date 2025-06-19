@@ -17,6 +17,15 @@ router.get('/user/:userId', auth, roleAuth(['admin']), bookingController.getBook
 // Get all bookings (admin only)
 router.get('/', auth, roleAuth(['admin']), bookingController.getAllBookings);
 
+// Get bookings count (admin only) - must be before /:id route
+router.get('/counter', auth, roleAuth(['admin']), bookingController.getCountOfBookings);
+
+//get booking revenue (admin only)
+router.get('/revenue', auth, roleAuth(['admin']), bookingController.getTotalRevenue);
+
+//cancelledBookings (admin only)
+router.get('/cancelled', auth, roleAuth(['admin']), bookingController.getFailedBookings);
+
 // Get specific booking (admin only)
 router.get('/:id', auth, roleAuth(['admin']), bookingController.getBooking);
 

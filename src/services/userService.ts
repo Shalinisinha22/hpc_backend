@@ -50,7 +50,13 @@ export default class UserService {
 
     async getUsers() {
         const users = await User.find({}, { password: 0 }); // Exclude password field
-        return users;
+        return {
+            users,
+            count: users.length
+        }
+        
+ 
+
     }
 
     async getUserById(id: string) {

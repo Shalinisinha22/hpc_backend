@@ -27,6 +27,7 @@ export interface Booking extends Document {
 
   createdAt: Date;
   updatedAt: Date;
+  status?:"confirmed" | "canceled" | "completed" | "pending";
 }
 
 const BookingSchema: Schema = new Schema(
@@ -78,8 +79,14 @@ const BookingSchema: Schema = new Schema(
       type: Boolean,
       default: false,
       required: true,
-    }
+    },
+     status:{
+    type: String,
+    enum: ["confirmed", "canceled", "completed", "pending"],
+    default: "pending",
   },
+  },
+ 
   {
     timestamps: true,
   }

@@ -24,7 +24,7 @@ export class RoomAvailabilityController {
         rooms = await this.roomAvailabilityService.getAvailableRooms();
       }
 
-      console.log('Available rooms:', rooms);
+      // console.log('Available rooms:', rooms);
       
       if (!rooms || rooms.length === 0) {
         res.status(404).json({

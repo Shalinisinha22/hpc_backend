@@ -1,6 +1,6 @@
 import express from 'express';
 import { UserController } from '../controllers/userController';
-import { auth } from '../middleware/auth';
+import { auth, roleAuth } from '../middleware/auth';
 
 const router = express.Router();
 const userController = new UserController();
@@ -15,7 +15,7 @@ router.put('/profile', auth, userController.updateProfile);
 router.put('/change-password', auth, userController.changePassword);
 
 // Admin routes (authentication required)
-router.get('/', auth, userController.getUsers);
+router.get('/', auth, roleAuth(['admin']), userController.getUsers);
 router.get('/:id', auth, userController.getUserById);
 router.put('/:id', auth, userController.updateUser);
 router.delete('/:id', auth, userController.deleteUser);
