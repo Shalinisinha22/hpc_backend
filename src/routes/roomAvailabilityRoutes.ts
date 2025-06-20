@@ -13,9 +13,9 @@ router.get('/unavailabilities', auth, roomAvailabilityController.getRoomUnavaila
 router.get('/unavailabilities/:id', auth, roomAvailabilityController.getRoomUnavailabilityById);
 
 // Admin routes (admin only)
-router.post('/unavailable', auth, roleAuth(['admin']), roomAvailabilityController.setRoomUnavailability);
-router.put('/unavailabilities/:id', auth, roleAuth(['admin']), roomAvailabilityController.updateRoomUnavailability);
-router.delete('/unavailabilities/:id', auth, roleAuth(['admin']), roomAvailabilityController.deleteRoomUnavailability);
-router.post('/update-statuses', auth, roleAuth(['admin']), roomAvailabilityController.updateRoomStatuses);
+router.post('/unavailable', auth, roomAvailabilityController.setRoomUnavailability);
+router.put('/unavailabilities/:id', auth, roomAvailabilityController.updateRoomUnavailability);
+router.delete('/unavailabilities/:id', auth, roomAvailabilityController.deleteRoomUnavailability);
+router.post('/update-statuses', auth, roomAvailabilityController.updateRoomStatuses);
 
 export default router;

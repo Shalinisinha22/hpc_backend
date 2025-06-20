@@ -10,14 +10,14 @@ const roomAvailabilityController = new RoomAvailabilityController();
 const allowedRoles = ['admin', 'Front Office', 'HR'];
 
 // Room CRUD routes
-router.post('/', auth, roleAuth(allowedRoles), roomController.createRoom);
+router.post('/', auth, roomController.createRoom);
 router.get('/', roomController.getRooms);
 router.get('/:id', roomController.getRoomById);
-router.put('/:id', auth, roleAuth(allowedRoles), roomController.updateRoom);
-router.delete('/:id', auth, roleAuth(allowedRoles), roomController.deleteRoom);
+router.put('/:id', auth, roomController.updateRoom);
+router.delete('/:id', auth, roomController.deleteRoom);
 
 // Room availability routes
 router.get('/status/available', auth, roomAvailabilityController.getAvailableRooms);
-router.post('/status/unavailable', auth, roleAuth(allowedRoles), roomAvailabilityController.setRoomUnavailability);
+router.post('/status/unavailable', auth, roomAvailabilityController.setRoomUnavailability);
 
 export default router;

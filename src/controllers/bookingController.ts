@@ -88,7 +88,7 @@ export class BookingController {
 
     async getBooking(req: AuthRequest, res: Response): Promise<void> {
    
-        if (!req.user || req.user.role !== 'admin') {
+        if (req.user.role == 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -106,7 +106,7 @@ export class BookingController {
 
     async updateBooking(req: AuthRequest, res: Response): Promise<void> {
  
-        if (!req.user || req.user.role !== 'admin') {
+            if (req.user.role == 'user'){
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -124,7 +124,7 @@ export class BookingController {
 
     async deleteBooking(req: AuthRequest, res: Response): Promise<void> {
         
-        if (!req.user || req.user.role !== 'admin') {
+          if (req.user.role == 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -140,7 +140,7 @@ export class BookingController {
         }
     }    async getAllBookings(req: AuthRequest, res: Response): Promise<void> {
        
-        if (!req.user || req.user.role !== 'admin') {
+         if (req.user.role == 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -220,7 +220,7 @@ export class BookingController {
 
     async getCountOfBookings(req: AuthRequest, res: Response): Promise<void> {
         try {
-            if (!req.user || req.user.role !== 'admin') {
+                if (req.user.role == 'user') {
                 res.status(403).json({ error: 'Forbidden: Admins only' });
                 return;
             }
@@ -234,7 +234,7 @@ export class BookingController {
 
     async getTotalRevenue(req: AuthRequest, res: Response): Promise<void> {
         try {
-            if (!req.user || req.user.role !== 'admin') {
+              if (req.user.role == 'user') {
                 res.status(403).json({ error: 'Forbidden: Admins only' });
                 return;
             }
@@ -248,7 +248,7 @@ export class BookingController {
 
     async getFailedBookings(req: AuthRequest, res: Response): Promise<void> {
         try {
-            if (!req.user || req.user.role !== 'admin') {
+             if (req.user.role == 'user') {
                 res.status(403).json({ error: 'Forbidden: Admins only' });
                 return;
             }

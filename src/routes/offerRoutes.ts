@@ -10,8 +10,8 @@ router.get('/', offerController.getOffers);
 router.get('/:id', offerController.getOfferById);
 
 // Protected routes (admin only)
-router.post('/', auth, roleAuth(['admin']), offerController.createOffer);
-router.put('/:id', auth, roleAuth(['admin']), offerController.updateOffer);
-router.delete('/:id', auth, roleAuth(['admin']), offerController.deleteOffer);
+router.post('/', auth, offerController.createOffer);
+router.put('/:id', auth, offerController.updateOffer);
+router.delete('/:id', auth, offerController.deleteOffer);
 
 export default router;

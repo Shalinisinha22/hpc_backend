@@ -10,8 +10,8 @@ router.get('/', hallController.getHalls);
 router.get('/:id', hallController.getHallById);
 
 // Protected routes (admin only)
-router.post('/create', auth, roleAuth(['admin']), hallController.createHall);
-router.put('/:id', auth, roleAuth(['admin']), hallController.updateHall);
-router.delete('/:id', auth, roleAuth(['admin']), hallController.deleteHall);
+router.post('/create', auth, hallController.createHall);
+router.put('/:id', auth, hallController.updateHall);
+router.delete('/:id', auth, hallController.deleteHall);
 
 export default router;

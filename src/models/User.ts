@@ -32,12 +32,12 @@ const userSchema = new mongoose.Schema({
   },
   phone:{
     type: Number,
-    required: true,
+    // required: true,
     unique: true
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'Front Office', 'HR', 'Bqt Service', 'Account'],
+    required: true,
     default: 'user'
   },
   status: {

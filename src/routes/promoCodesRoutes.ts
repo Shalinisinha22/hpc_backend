@@ -13,8 +13,8 @@ router.get('/', auth, promoCodeController.getPromoCodes);
 router.get('/:id', auth, promoCodeController.getPromoCodeById);
 
 // Admin routes (admin only)
-router.post('/', auth, roleAuth(['admin']), promoCodeController.createPromoCode);
-router.put('/:id', auth, roleAuth(['admin']), promoCodeController.updatePromoCode);
-router.delete('/:id', auth, roleAuth(['admin']), promoCodeController.deletePromoCode);
+router.post('/', auth, promoCodeController.createPromoCode);
+router.put('/:id', auth, promoCodeController.updatePromoCode);
+router.delete('/:id', auth, promoCodeController.deletePromoCode);
 
 export default router;

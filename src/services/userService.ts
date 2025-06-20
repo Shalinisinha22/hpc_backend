@@ -38,13 +38,27 @@ export default class UserService {
         }
 
         const token = this.generateToken(user._id);
+        let roleData = null;
+        if (user.role && user.role !== 'user') {
+            // Fetch role details if not a basic user
+            const roleModel = await require('../models/roleModel').default;
+            const foundRole = await roleModel.findOne({ role: user.role });
+            if (foundRole) {
+                roleData = {
+                    role: foundRole.role,
+                    description: foundRole.description,
+                    permissions: foundRole.permissions
+                };
+            }
+        }
         return {
             name: user.name,
             email: user.email,
             role: user.role,
             phone: user.phone,
             token,
-            message: "Login successful"
+            message: "Login successful",
+            ...(roleData && { roleData })
         };
     }
 

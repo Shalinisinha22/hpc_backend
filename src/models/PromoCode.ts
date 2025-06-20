@@ -26,7 +26,7 @@ const promoCodeSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['percentage', 'fixed'],
+    enum: ['percent', 'fixed'],
     required: true
   },
   status: {

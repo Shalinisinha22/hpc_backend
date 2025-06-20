@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const eventBookingSchema = new mongoose.Schema({
+
   name: {
     type: String,
     required: true,
@@ -13,10 +14,17 @@ const eventBookingSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
+  mobile:{
+    type: String,
+    required: true,
+    trim: true,
+    match: [/^\d{10}$/, 'Please enter a valid 10-digit mobile number']
+  },
+
   eventType: {
     type: String,
     required: true,
-    enum: ['wedding', 'corporate', 'birthday', 'conference', 'seminar', 'party', 'other'],
+    enum: ['wedding', 'conference', 'social event', 'meeting'],
     trim: true
   },
   date: {
@@ -33,16 +41,13 @@ const eventBookingSchema = new mongoose.Schema({
     trim: true,
     maxlength: 1000
   },
+
   status: {
     type: String,
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
     default: 'pending'
   },
-  paymentStatus:{
-    type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-    default: 'pending'
-  },
+ 
  
   hallId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -6,33 +6,33 @@ const router = express.Router();
 const bookingController = new BookingController();
 
 // Create booking (public with optional auth)
-router.post('/', optionalAuth, bookingController.createBooking);
+router.post('/', auth, bookingController.createBooking);
 
 // My bookings route (authenticated users)
 router.get('/my', auth, bookingController.getBookingsByUserToken);
 
 // User bookings route (admin only)
-router.get('/user/:userId', auth, roleAuth(['admin']), bookingController.getBookingsByUserId);
+router.get('/user/:userId', auth, bookingController.getBookingsByUserId);
 
 // Get all bookings (admin only)
-router.get('/', auth, roleAuth(['admin']), bookingController.getAllBookings);
+router.get('/', auth, bookingController.getAllBookings);
 
 // Get bookings count (admin only) - must be before /:id route
-router.get('/counter', auth, roleAuth(['admin']), bookingController.getCountOfBookings);
+router.get('/counter', auth, bookingController.getCountOfBookings);
 
 //get booking revenue (admin only)
-router.get('/revenue', auth, roleAuth(['admin']), bookingController.getTotalRevenue);
+router.get('/revenue', auth, bookingController.getTotalRevenue);
 
 //cancelledBookings (admin only)
-router.get('/cancelled', auth, roleAuth(['admin']), bookingController.getFailedBookings);
+router.get('/cancelled', auth, bookingController.getFailedBookings);
 
 // Get specific booking (admin only)
-router.get('/:id', auth, roleAuth(['admin']), bookingController.getBooking);
+router.get('/:id', auth, bookingController.getBooking);
 
 // Update booking (admin only)
-router.put('/:id', auth, roleAuth(['admin']), bookingController.updateBooking);
+router.put('/:id', auth, bookingController.updateBooking);
 
 // Delete booking (admin only)
-router.delete('/:id', auth, roleAuth(['admin']), bookingController.deleteBooking);
+router.delete('/:id', auth, bookingController.deleteBooking);
 
 export default router;
