@@ -5,7 +5,8 @@ import { AuthRequest } from '../middleware/auth';
 export const createRole = async (req: AuthRequest, res: Response) => {
   const { role } = req.body;
   if (!role || typeof role !== 'string' || !role.trim()) {
-    return res.status(400).json({ message: 'Role name is required and must be a non-empty string.' });
+    res.status(400).json({ message: 'Role name is required and must be a non-empty string.' });
+    return;
   }
   try {
       if (req.user.role == 'user') {
@@ -15,9 +16,11 @@ export const createRole = async (req: AuthRequest, res: Response) => {
     const newRole = await roleService.createRole(req.body);
     console.log('New role created:', newRole);
     res.status(201).json(newRole);
+    return;
   } catch (error: any) {
     console.log('Error creating role:', error);
     res.status(400).json({ message: error.message });
+    return;
   }
 };
 
