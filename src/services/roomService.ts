@@ -27,7 +27,6 @@ export class RoomService {
     // Find the room
     const room = await Room.findById(roomId);
     if (!room) return null;
-
     // Add new image object to the array
     room.roomImage.push(img);
     await room.save();
@@ -39,7 +38,7 @@ export class RoomService {
     const room = await Room.findById(roomId);
     if (!room) return null;   
     // Filter out the image with the specified ID
-    room.roomImage = room.roomImage.filter((img) => img._id.toString() !== imgId);
+    room.roomImage = room.roomImage.filter((img: any) => img._id.toString() !== imgId);
     await room.save();
     return room;  
   }

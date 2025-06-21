@@ -86,7 +86,7 @@ export class BookingService {
             contact: booking.phone,
             bookingDate: booking.createdAt,
             paymentStatus: booking.paymentStatus,
-            status: booking.status
+            status: booking.status || ''
         }));
     }
 
@@ -105,14 +105,12 @@ export class BookingService {
     public async deleteBooking(id: string) {
         // Try to delete by custom bookingId first
         let result = await Booking.deleteOne({ bookingId: id });
-        
         // If not found and id looks like MongoDB ObjectId, try deleting by _id
         if (result.deletedCount === 0 && id.match(/^[0-9a-fA-F]{24}$/)) {
-            result = await Booking.findByIdAndDelete(id);
-            return !!result;
+            const doc = await Booking.findByIdAndDelete(id);
+            return doc ? { acknowledged: true, deletedCount: 1 } : { acknowledged: false, deletedCount: 0 };
         }
-        
-        return !!result.deletedCount && result.deletedCount > 0;
+        return result;
     }
 
     public async getBookingsByUserId(userId: string) {

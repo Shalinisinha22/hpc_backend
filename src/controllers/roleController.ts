@@ -29,8 +29,10 @@ export const getRoles = async (req: AuthRequest, res: Response) => {
             }
     const roles = await roleService.getRoles();
     res.json(roles);
+    return;
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error instanceof Error ? error.message : 'Unknown error') });
+    return;
   }
 };
 
@@ -41,10 +43,15 @@ export const getRoleById = async (req: AuthRequest, res: Response) => {
                 return;
             }
     const role = await roleService.getRoleById(req.params.id);
-    if (!role) return res.status(404).json({ message: 'Role not found' });
+    if (!role) {
+      res.status(404).json({ message: 'Role not found' });
+      return;
+    }
     res.json(role);
+    return;
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error instanceof Error ? error.message : 'Unknown error') });
+    return;
   }
 };
 
@@ -55,10 +62,15 @@ export const updateRole = async (req: AuthRequest, res: Response) => {
                 return;
             }
     const role = await roleService.updateRole(req.params.id, req.body);
-    if (!role) return res.status(404).json({ message: 'Role not found' });
+    if (!role) {
+      res.status(404).json({ message: 'Role not found' });
+      return;
+    }
     res.json(role);
+    return;
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: (error instanceof Error ? error.message : 'Unknown error') });
+    return;
   }
 };
 
@@ -69,9 +81,14 @@ export const deleteRole = async (req: AuthRequest, res: Response) => {
                 return;
             }
     const role = await roleService.deleteRole(req.params.id);
-    if (!role) return res.status(404).json({ message: 'Role not found' });
+    if (!role) {
+      res.status(404).json({ message: 'Role not found' });
+      return;
+    }
     res.json({ message: 'Role deleted' });
+    return;
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error instanceof Error ? error.message : 'Unknown error') });
+    return;
   }
 };
