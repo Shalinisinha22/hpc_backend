@@ -12,6 +12,10 @@ export class PromoCodeController {
   createPromoCode = async (req: AuthRequest, res: Response): Promise<void> => {
     console.log('Received promo code data:', req.body);
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       // Parse and validate the data
       const promoCodeData = {
         ...req.body,
@@ -104,6 +108,10 @@ export class PromoCodeController {
 
   updatePromoCode = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const promoCode = await this.promoCodeService.updatePromoCode(req.params.id, req.body);
       if (!promoCode) {
         res.status(404).json({ error: 'Promo code not found' });
@@ -122,6 +130,10 @@ export class PromoCodeController {
 
   deletePromoCode = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.promoCodeService.deletePromoCode(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Promo code not found' });

@@ -53,6 +53,10 @@ export class RoomAvailabilityController {
   setRoomUnavailability = async (req: AuthRequest, res: Response): Promise<void> => {
     console.log('Setting room unavailability:', req.body);
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       // Validate required fields
       const { roomId, fromDate, toDate } = req.body;
       if (!roomId || !fromDate || !toDate) {
@@ -121,6 +125,10 @@ export class RoomAvailabilityController {
 
   updateRoomUnavailability = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const unavailability = await this.roomAvailabilityService.updateUnavailability(req.params.id, req.body);
       if (!unavailability) {
         res.status(404).json({ error: 'Room unavailability not found' });
@@ -140,6 +148,10 @@ export class RoomAvailabilityController {
 
   deleteRoomUnavailability = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.roomAvailabilityService.deleteUnavailability(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Room unavailability not found' });
@@ -156,8 +168,12 @@ export class RoomAvailabilityController {
     }
   };
 
-  updateRoomStatuses = async (_req: AuthRequest, res: Response): Promise<void> => {
+  updateRoomStatuses = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       await this.roomAvailabilityService.updateRoomStatuses();
       res.json({
         success: true,

@@ -18,6 +18,7 @@ export class BookingController {
         this.getCountOfBookings = this.getCountOfBookings.bind(this);
         this.getTotalRevenue= this.getTotalRevenue.bind(this);
         this.getFailedBookings = this.getFailedBookings.bind(this);
+        this.getTotalRevenue = this.getTotalRevenue.bind(this);
     }    
 
     // Convert methods to arrow functions to preserve 'this' context

@@ -14,6 +14,9 @@ router.post('/', auth, roomController.createRoom);
 router.get('/', roomController.getRooms);
 router.get('/:id', roomController.getRoomById);
 router.put('/:id', auth, roomController.updateRoom);
+router.post('/:id/image', auth, roomController.addRoomImage);  
+
+router.delete('/:id/image/:imgId', auth, roomController.deleteRoomImage);
 router.delete('/:id', auth, roomController.deleteRoom);
 
 // Room availability routes

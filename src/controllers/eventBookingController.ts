@@ -70,6 +70,10 @@ export class EventBookingController {
 
   updateEventBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const eventBooking = await this.eventBookingService.updateEventBooking(req.params.id, req.body);
       if (!eventBooking) {
         res.status(404).json({ 
@@ -95,6 +99,10 @@ export class EventBookingController {
 
   deleteEventBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.eventBookingService.deleteEventBooking(req.params.id);
       if (!deleted) {
         res.status(404).json({ 
@@ -119,6 +127,10 @@ export class EventBookingController {
 
   getEventBookingsByStatus = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const { status } = req.params;
       const eventBookings = await this.eventBookingService.getEventBookingsByStatus(status);
       res.status(200).json({ 
@@ -137,6 +149,10 @@ export class EventBookingController {
 
   getEventBookingsByDateRange = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const { startDate, endDate } = req.query;
       
       if (!startDate || !endDate) {

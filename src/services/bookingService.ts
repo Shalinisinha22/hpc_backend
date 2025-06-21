@@ -139,4 +139,14 @@ export class BookingService {
             throw error;
         }
     }
+    public async getTotalRevenue(): Promise<number> {
+        try {
+            const bookings = await Booking.find({  paymentStatus: { $ne: 'cancelled' }, status  : { $ne: 'canceled' } });
+            const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+            return totalRevenue;
+        } catch (error) {
+            console.error('Error calculating total revenue:', error);
+            throw error;
+        }
+    }
 }

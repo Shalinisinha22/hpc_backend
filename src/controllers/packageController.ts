@@ -11,6 +11,10 @@ export class PackageController {
 
   createPackage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const packageItem = await this.packageService.createPackage(req.body);
       res.status(201).json({ package: packageItem, message: 'Package created successfully' });
       return;
@@ -48,6 +52,10 @@ export class PackageController {
 
   updatePackage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const packageItem = await this.packageService.updatePackage(req.params.id, req.body);
       if (!packageItem) {
         res.status(404).json({ error: 'Package not found' });
@@ -63,6 +71,10 @@ export class PackageController {
 
   deletePackage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.packageService.deletePackage(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Package not found' });

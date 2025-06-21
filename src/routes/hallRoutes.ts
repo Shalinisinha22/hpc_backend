@@ -13,5 +13,7 @@ router.get('/:id', hallController.getHallById);
 router.post('/create', auth, hallController.createHall);
 router.put('/:id', auth, hallController.updateHall);
 router.delete('/:id', auth, hallController.deleteHall);
+router.post('/:id/image', auth, hallController.addHallImage);
+router.delete('/:id/image/:imgId', auth, hallController.deleteHallImage);
 
 export default router;

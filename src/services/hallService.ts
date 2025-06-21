@@ -76,6 +76,23 @@ export class HallService {
       throw new Error(error.message || 'Failed to delete hall');
     }
   }
+
+  async addHallImage(hallId: string, img: { url: string; name: string; ext: string }) {
+    const hall = await Hall.findById(hallId);
+    if (!hall) return null;
+    hall.hall_image.push(img);
+    await hall.save();
+    return hall;
+  }
+
+  async deleteHallImage(hallId: string, imageId: string) {
+    const hall = await Hall.findById(hallId);
+    if (!hall) return null;
+    // Remove image by _id or name (adjust as needed)
+    hall.hall_image = hall.hall_image.filter((img: any) => img._id?.toString() !== imageId && img.name !== imageId);
+    await hall.save();
+    return hall;
+  }
 }
 
 export default HallService;

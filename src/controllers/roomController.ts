@@ -96,6 +96,73 @@ export class RoomController {
     }
   };
 
+  addRoomImage = async (req: AuthRequest, res: Response): Promise<void> => {
+    console.log('addRoomImage called with file:', req.body);
+    try {
+      if (!req.body) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
+      const roomId = req.params.id; 
+
+      const img={
+        name:req.body.name,
+        url:req.body.url,
+        ext: req.body.ext,
+      }
+
+ 
+      const updatedRoom = await this.roomService.addRoomImage(roomId, img);
+      if (!updatedRoom) {
+        res.status(404).json({ error: 'Room not found' });
+        return;
+      }
+      res.json({
+        room: updatedRoom,
+        message: 'Image added successfully',
+        success: true
+      });
+      return;
+    } catch (error: any) {
+      console.error('Error adding room image:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to add room image',
+        success: false
+      });
+      return;
+    }
+  };
+
+  deleteRoomImage = async (req: AuthRequest, res: Response): Promise<void> => {
+    console.log(req.params);
+    try {
+      const roomId = req.params.id;
+      const imageId = req.params.imgId;
+      if (!imageId) {
+        res.status(400).json({ error: 'Image ID is required' });
+        return;
+      }
+      const updatedRoom = await this.roomService.deleteRoomImage(roomId, imageId);
+      if (!updatedRoom) {
+        res.status(404).json({ error: 'Room not found' });
+        return;
+      }
+      res.json({
+        room: updatedRoom,
+        message: 'Image deleted successfully',
+        success: true
+      });
+      return;
+    } catch (error: any) {
+      console.error('Error deleting room image:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to delete room image',
+        success: false
+      });
+      return;
+    }
+  };
+
   deleteRoom = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const deleted = await this.roomService.deleteRoom(req.params.id);

@@ -22,4 +22,25 @@ export class RoomService {
   async deleteRoom(id: string) {
     return Room.findByIdAndDelete(id);
   }
+
+  async addRoomImage(roomId: string, img: { url: string; name: string; ext: string }) {
+    // Find the room
+    const room = await Room.findById(roomId);
+    if (!room) return null;
+
+    // Add new image object to the array
+    room.roomImage.push(img);
+    await room.save();
+    return room;
+  }
+
+  async deleteRoomImage(roomId: string, imgId: string) {
+    // Find the room
+    const room = await Room.findById(roomId);
+    if (!room) return null;   
+    // Filter out the image with the specified ID
+    room.roomImage = room.roomImage.filter((img) => img._id.toString() !== imgId);
+    await room.save();
+    return room;  
+  }
 }

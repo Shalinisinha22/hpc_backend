@@ -18,7 +18,8 @@ import eventBookingRoutes from './routes/eventBookingRoutes';
 import { logger } from './middleware/loggerMiddleware';
 import { errorHandler } from './middleware/errorMiddleware';
 import roleRoutes from './routes/roleRoutes';
-
+import diningRoutes from "./routes/diningRoutes";
+import diningBookingRoutes from "./routes/diningBookingRoutes";
 const app = express();
 
 connectDB();
@@ -94,6 +95,8 @@ app.use('/api/v1/offers', offerRoutes);
 app.use('/api/v1/packages', packageRoutes);
 app.use('/api/v1/event-bookings', eventBookingRoutes);
 app.use('/api/v1/roles', roleRoutes);
+app.use("/api/v1/dining",diningRoutes);
+app.use("/api/v1/dining-bookings", diningBookingRoutes);
 
 app.use(errorHandler);
 

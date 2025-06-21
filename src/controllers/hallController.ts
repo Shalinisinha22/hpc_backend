@@ -12,6 +12,10 @@ export class HallController {
   createHall = async (req: AuthRequest, res: Response): Promise<void> => {
     console.log('Received hall data:', req.body);
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       // Parse and validate the data
       const hallData = {
         ...req.body,
@@ -77,6 +81,10 @@ export class HallController {
 
   updateHall = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const hall = await this.hallService.updateHall(req.params.id, req.body);
       if (!hall) {
         res.status(404).json({ error: 'Hall not found' });
@@ -95,6 +103,10 @@ export class HallController {
 
   deleteHall = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.hallService.deleteHall(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Hall not found' });
@@ -104,6 +116,68 @@ export class HallController {
       return;
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+      return;
+    }
+  };
+
+  addHallImage = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.body) {
+        res.status(400).json({ error: 'No image data provided' });
+        return;
+      }
+      const hallId = req.params.id;
+      const img = {
+        name: req.body.name,
+        url: req.body.url,
+        ext: req.body.ext,
+      };
+      const updatedHall = await this.hallService.addHallImage(hallId, img);
+      if (!updatedHall) {
+        res.status(404).json({ error: 'Hall not found' });
+        return;
+      }
+      res.json({
+        hall: updatedHall,
+        message: 'Image added successfully',
+        success: true
+      });
+      return;
+    } catch (error: any) {
+      console.error('Error adding hall image:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to add hall image',
+        success: false
+      });
+      return;
+    }
+  };
+
+  deleteHallImage = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const hallId = req.params.id;
+      const imageId = req.params.imgId;
+      if (!imageId) {
+        res.status(400).json({ error: 'Image ID is required' });
+        return;
+      }
+      const updatedHall = await this.hallService.deleteHallImage(hallId, imageId);
+      if (!updatedHall) {
+        res.status(404).json({ error: 'Hall not found' });
+        return;
+      }
+      res.json({
+        hall: updatedHall,
+        message: 'Image deleted successfully',
+        success: true
+      });
+      return;
+    } catch (error: any) {
+      console.error('Error deleting hall image:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to delete hall image',
+        success: false
+      });
       return;
     }
   };

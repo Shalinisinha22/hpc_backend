@@ -12,6 +12,10 @@ export class OfferController {
   createOffer = async (req: AuthRequest, res: Response): Promise<void> => {
     console.log('Received offer data:', req.body);
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       // Parse and validate the data
       const offerData = {
         ...req.body,
@@ -72,6 +76,10 @@ export class OfferController {
 
   updateOffer = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const offer = await this.offerService.updateOffer(req.params.id, req.body);
       if (!offer) {
         res.status(404).json({ error: 'Offer not found' });
@@ -90,6 +98,10 @@ export class OfferController {
 
   deleteOffer = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.offerService.deleteOffer(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Offer not found' });

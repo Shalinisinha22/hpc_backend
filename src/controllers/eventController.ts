@@ -12,6 +12,10 @@ export class EventController {
   createEvent = async (req: AuthRequest, res: Response): Promise<void> => {
     console.log('Received event data:', req.body);
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       // Parse and validate the data
       const eventData = {
         ...req.body,
@@ -74,6 +78,10 @@ export class EventController {
 
   updateEvent = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const event = await this.eventService.updateEvent(req.params.id, req.body);
       if (!event) {
         res.status(404).json({ error: 'Event not found' });
@@ -92,6 +100,10 @@ export class EventController {
 
   deleteEvent = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (req.user.role == 'user') {
+                res.status(403).json({ error: 'Forbidden: Admins only' });
+                return;
+            }
       const deleted = await this.eventService.deleteEvent(req.params.id);
       if (!deleted) {
         res.status(404).json({ error: 'Event not found' });
