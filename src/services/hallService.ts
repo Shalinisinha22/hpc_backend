@@ -93,6 +93,14 @@ export class HallService {
     await hall.save();
     return hall;
   }
+
+  async getHallsImages() {
+    try {
+      return await Hall.find({}, { hall_image: 1, hall_name: 1, _id: 0 }).populate('hall_image');
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch hall images');
+    }
+  }
 }
 
 export default HallService;

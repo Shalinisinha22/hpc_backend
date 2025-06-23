@@ -105,4 +105,19 @@ export class DiningController {
       res.status(500).json({ error: error.message || 'Failed to delete dining image', success: false });
     }
   };
+
+  getDiningImages = async (_req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const diningImages = await this.diningService.getDiningImages();
+        const images = diningImages.map(dining => ({
+        id: dining._id,
+        images: dining.image,
+        dining_name:dining.name
+      }));
+
+      res.json(images);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Failed to fetch dining images' });
+    }
+  }
 }

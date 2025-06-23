@@ -177,4 +177,28 @@ export class RoomController {
       return;
     }
   };
+
+  getAllRoomsImages = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const rooms = await this.roomService.getRoomsImages();
+      if (!rooms || rooms.length === 0) {
+        res.status(404).json({ error: 'No rooms found' });
+        return;
+      }
+      const roomImages = rooms.map(room => ({
+        id: room._id,
+        images: room.roomImage,
+        room_name: room.room_title
+      }));
+      res.json(roomImages);
+      return;
+    } catch (error: any) {
+      console.error('Error fetching room images:', error);
+      res.status(500).json({ 
+        error: error.message || 'Failed to fetch room images',
+        success: false 
+      });
+      return;
+    }
+  }
 }

@@ -60,6 +60,10 @@ export class DiningService {
     await dining.save();
     return dining;
   }
+
+  async getDiningImages(): Promise<DiningDocument[]> {
+    return Dining.find({}, { image: 1, _id: 0,name:1  }).populate('image');
+  }
 }
 
 export default DiningService;

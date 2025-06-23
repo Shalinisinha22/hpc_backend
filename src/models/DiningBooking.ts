@@ -7,6 +7,7 @@ export interface DiningBookingDocument extends Document {
   time: string;
   guests: number;
   dining: Schema.Types.ObjectId;
+  userId?: Schema.Types.ObjectId;
   cdate: Date;
 }
 
@@ -17,6 +18,7 @@ const diningBookingSchema = new Schema<DiningBookingDocument>({
   time: { type: String, required: true, trim: true },
   guests: { type: Number, required: true },
   dining: { type: Schema.Types.ObjectId, ref: 'Dining', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
   cdate: { type: Date, default: Date.now }
 });
 

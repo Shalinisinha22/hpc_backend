@@ -181,4 +181,31 @@ export class HallController {
       return;
     }
   };
+
+  getAllHallImages= async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+
+      const halls = await this.hallService.getHallsImages();
+       if (!halls || halls.length === 0) {
+        res.status(404).json({ error: 'No halls found' });
+        return;
+      }
+      const hallImages = halls.map(hall => ({
+        id: hall._id,
+        images: hall.hall_image,
+        hall_name: hall.hall_name
+      }));
+      res.json(hallImages);
+    
+      return;
+    } catch (error: any) {
+      console.error('Error fetching hall images:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to fetch hall images',
+        success: false
+      });
+      return;
+    }
+  }
+
 }

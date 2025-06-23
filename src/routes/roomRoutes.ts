@@ -12,6 +12,7 @@ const allowedRoles = ['admin', 'Front Office', 'HR'];
 // Room CRUD routes
 router.post('/', auth, roomController.createRoom);
 router.get('/', roomController.getRooms);
+router.get('/roomImages', roomController.getAllRoomsImages)
 router.get('/:id', roomController.getRoomById);
 router.put('/:id', auth, roomController.updateRoom);
 router.post('/:id/image', auth, roomController.addRoomImage);  

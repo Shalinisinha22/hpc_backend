@@ -13,10 +13,10 @@ export class UserController {
     console.log('Received user registration data:', req.body);
     try {
       // Validate required fields
-      const { name, email, password } = req.body;
-      if (!name || !email || !password) {
+      const { name, email, phone, password } = req.body;
+      if (!name || !email || !password || !phone) {
         res.status(400).json({ 
-          error: 'Missing required fields: name, email, and password are required',
+          error: 'Missing required fields: name, email, phone, and password are required',
           success: false 
         });
         return;
@@ -195,6 +195,36 @@ export class UserController {
         error: error.message || 'Failed to change password',
         success: false 
       });
+      return;
+    }
+  };
+
+  verifyPhoneOtp = async (req: Request, res: Response): Promise<void> => {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+      res.status(400).json({ error: 'Phone and OTP are required', success: false });
+      return;
+    }
+    try {
+      // Replace with your actual Otpless API call and credentials
+      const axios = require('axios');
+      const verifyRes = await axios.post('https://api.otpless.com/otp/verify', {
+        phone,
+        otp,
+        // ...other required params, e.g., your API key/secret
+      }, {
+        headers: {
+          'Authorization': 'Bearer YOUR_OTPLESS_API_KEY'
+        }
+      });
+      if (!verifyRes.data.success) {
+        res.status(400).json({ error: 'Invalid OTP', success: false });
+        return;
+      }
+      res.json({ message: 'Phone number verified successfully', success: true });
+      return;
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'OTP verification failed', success: false });
       return;
     }
   };

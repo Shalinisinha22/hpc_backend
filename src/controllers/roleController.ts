@@ -25,6 +25,7 @@ export const createRole = async (req: AuthRequest, res: Response) => {
 };
 
 export const getRoles = async (req: AuthRequest, res: Response) => {
+
   try {
       if (req.user.role == 'user') {
                 res.status(403).json({ error: 'Forbidden: Admins only' });

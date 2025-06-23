@@ -88,6 +88,7 @@ export class BookingController {
     };
 
     async getBooking(req: AuthRequest, res: Response): Promise<void> {
+       
    
         if (req.user.role == 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
@@ -140,7 +141,7 @@ export class BookingController {
             res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
         }
     }    async getAllBookings(req: AuthRequest, res: Response): Promise<void> {
-       
+        console.log(req.user.role)
          if (req.user.role == 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
@@ -161,7 +162,7 @@ export class BookingController {
     }
 
     async getBookingsByUserId(req: AuthRequest, res: Response): Promise<void> {
-        console.log('getBookingsByUserId called with userId:', req.params.userId);
+
         try {
             const bookings = await this.bookingService.getBookingsByUserId(req.params.userId);
             if (!bookings || bookings.length === 0) {

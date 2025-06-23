@@ -7,6 +7,7 @@ const hallController = new HallController();
 
 // Public routes
 router.get('/', hallController.getHalls);
+router.get('/hallImages', hallController.getAllHallImages);
 router.get('/:id', hallController.getHallById);
 
 // Protected routes (admin only)

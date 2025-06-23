@@ -54,6 +54,11 @@ const eventBookingSchema = new mongoose.Schema({
     ref: 'Hall',
     required: false
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
   cdate: {
     type: Date,
     default: Date.now

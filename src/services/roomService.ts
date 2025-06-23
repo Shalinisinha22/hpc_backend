@@ -42,4 +42,7 @@ export class RoomService {
     await room.save();
     return room;  
   }
+  async getRoomsImages() {
+    return Room.find({}, { roomImage: 1, _id: 0,room_title:1 }).populate('roomImage');
+  } 
 }

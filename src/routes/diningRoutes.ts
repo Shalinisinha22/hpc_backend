@@ -7,6 +7,7 @@ const diningController = new DiningController();
 
 // Public routes
 router.get('/', diningController.getAllDining);
+router.get('/diningImages', diningController.getDiningImages);
 router.get('/:id', diningController.getDiningById);
 
 // Protected routes
