@@ -49,9 +49,9 @@ export class CCAvenueService {
         const orderId = request.bookingId ? String(request.bookingId) : uuidv4();
 
         // Use NGROK_URL if present, else fallback to config
-        const baseUrl = process.env.NGROK_URL || this.config.returnUrl.replace(/\/api.*$/, '');
-        const redirect_url = `${baseUrl}/api/ccavenue/payment-success`;
-        const cancel_url = `${baseUrl}/api/ccavenue/payment-cancel`;
+        const baseUrl = process.env.BASE_URL;
+        const redirect_url = `${baseUrl}/api/v1/ccavenue/payment-success`;
+        const cancel_url = `${baseUrl}/api/v1/ccavenue/payment-cancel`;
 
         // Prepare data to be encrypted (DO NOT include access_code or checksum)
         const paymentData = {

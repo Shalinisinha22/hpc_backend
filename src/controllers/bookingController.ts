@@ -33,7 +33,6 @@ export class BookingController {
         this.getTotalRevenue= this.getTotalRevenue.bind(this);
         this.getFailedBookings = this.getFailedBookings.bind(this);
         this.getTotalRevenue = this.getTotalRevenue.bind(this);
-        this.initiatePayment = this.initiatePayment.bind(this);
         this.handlePaymentSuccess = this.handlePaymentSuccess.bind(this);
         this.handlePaymentCancel = this.handlePaymentCancel.bind(this);
       
@@ -41,47 +40,27 @@ export class BookingController {
     }    
 
     // Payment methods
-    private async _initiatePayment(paymentRequest: CCAvenuePaymentRequest) {
-        // Add billingTel for compatibility if needed
-        const paymentReqWithTel = {
-            ...paymentRequest,
-            billingTel: paymentRequest.billingPhone || '',
+    private async _initiatePayment(booking: Booking): Promise<any> {
+        // Compose PaymentRequest for CCAvenueService
+        const paymentRequest = {
+            bookingId: String(booking._id),
+            amount: booking.totalPrice,
+            currency: 'INR',
+            redirectUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-success`,
+            cancelUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-cancel`,
+            billingDetails: {
+                name: booking.fullName,
+                address: booking.specialRequest || '',
+                city: '',
+                state: '',
+                country: 'India',
+                zip: '',
+                email: booking.email,
+                phone: booking.phone
+            }
         };
-        return await this.ccavenueService.initiatePayment(paymentReqWithTel);
+        return await this.ccavenueService.initiatePayment(paymentRequest);
     }
-
-async initiatePayment(request: PaymentRequest): Promise<{ url: string; parameters: Record<string, string> }> {
-    const orderId = request.bookingId || uuidv4(); // Use booking ID from controller
-
-    const paymentData = {
-        order_id: orderId, // ✅ MUST be here
-        amount: request.amount.toString(),
-        currency: request.currency || this.config.currency,
-        redirect_url: request.redirectUrl,
-        cancel_url: request.cancelUrl,
-        billing_name: request.billingName,
-        billing_address: request.billingAddress,
-        billing_city: request.billingCity,
-        billing_state: request.billingState,
-        billing_country: request.billingCountry,
-        billing_zip: request.billingZip,
-        billing_email: request.billingEmail,
-        billing_tel: request.billingTel,
-        merchant_id: this.config.merchantId,
-    };
-
-    const dataString = qs.stringify(paymentData);
-    const encRequest = this.encrypt(dataString);
-
-    return {
-        url: 'https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction',
-        parameters: {
-            access_code: this.config.accessCode,
-            encRequest
-        }
-    };
-}
-
 
     async handlePaymentSuccess(req: Request, res: Response): Promise<void> {
         try {
@@ -160,7 +139,7 @@ async initiatePayment(request: PaymentRequest): Promise<{ url: string; parameter
                 [key: string]: any;
             };
 
-               let userId = undefined;
+            let userId = undefined;
             if (req.user && !req.body.isGuest) {
                 userId = req.user._id.toString();
                 console.log('User authenticated, userId set to:', userId);
@@ -168,13 +147,8 @@ async initiatePayment(request: PaymentRequest): Promise<{ url: string; parameter
                 console.log('User not authenticated or is guest');
             }
 
-          
-
             console.log('Creating booking with userId:', userId);
-         
-
-
-            console.log(req.body)
+            console.log(req.body);
 
             // Only assign userId if isGuest is false and req.user exists
             const isGuest = !req.user;
@@ -233,32 +207,13 @@ async initiatePayment(request: PaymentRequest): Promise<{ url: string; parameter
             const booking = await this.bookingService.createBooking(bookingData as Partial<Booking>);
 
             if (paymentMethod === 'ccavenue') {
-                const paymentRequest: CCAvenuePaymentRequest = {
-                    amount: bookingData.totalPrice,
-                    bookingId: String(booking._id),
-                    currency: 'INR',
-                    redirectUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-success`,
-                    cancelUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-cancel`,
-                    billingName: booking.fullName,
-                    billingAddress: booking.specialRequest || '',
-                    billingCity: '',
-                    billingState: '',
-                    billingCountry: 'India',
-                    billingZip: '',
-                    billingEmail: booking.email,
-                    billingPhone: booking.phone
-                };
-
-                const paymentResponse = await this._initiatePayment(paymentRequest);
-                
+                const paymentResponse = await this._initiatePayment(booking);
                 res.json({
                     booking,
                     payment: paymentResponse,
                     paymentMethod: 'ccavenue',
-                  
                 });
-            } 
-            else {
+            } else {
                 res.json({
                     booking,
                     paymentMethod: 'pay-later'
