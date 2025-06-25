@@ -1,12 +1,26 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { BookingService } from '../services/bookingService';
-import { AuthRequest } from '../middleware/auth';
+import { CCAvenueService } from '../services/ccavenueService';
+import { Document } from 'mongoose';
+import { Booking } from '../models/bookingModel';
+import { PaymentRequest, PaymentMethod, BookingPaymentResponse } from '../types/paymentTypes';
+import { CCAvenueResponse, CCAvenuePaymentRequest } from '../types/ccavenueTypes';
+import { AuthRequest } from '../types/authTypes';
 
 export class BookingController {
     private bookingService: BookingService;
-    
+    private ccavenueService: CCAvenueService;
+
     constructor() {
         this.bookingService = new BookingService();
+        this.ccavenueService = new CCAvenueService({
+            merchantId: process.env.CCAVENUE_MERCHANT_ID || '',
+            workingKey: process.env.CCAVENUE_WORKING_KEY || '',
+            accessCode: process.env.CCAVENUE_ACCESS_CODE || '',
+            currency: 'INR',
+            returnUrl: process.env.BASE_URL + '/api/bookings/payment/success',
+            cancelUrl: process.env.BASE_URL + '/api/bookings/payment/cancel'
+        });
         // Bind all methods to maintain 'this' context
         this.createBooking = this.createBooking.bind(this);
         this.getBooking = this.getBooking.bind(this);
@@ -19,18 +33,134 @@ export class BookingController {
         this.getTotalRevenue= this.getTotalRevenue.bind(this);
         this.getFailedBookings = this.getFailedBookings.bind(this);
         this.getTotalRevenue = this.getTotalRevenue.bind(this);
+        this.initiatePayment = this.initiatePayment.bind(this);
+        this.handlePaymentSuccess = this.handlePaymentSuccess.bind(this);
+        this.handlePaymentCancel = this.handlePaymentCancel.bind(this);
+      
+   
     }    
 
-    // Convert methods to arrow functions to preserve 'this' context
-    createBooking = async (req: AuthRequest, res: Response): Promise<void> => {
+    // Payment methods
+    private async _initiatePayment(paymentRequest: CCAvenuePaymentRequest) {
+        // Add billingTel for compatibility if needed
+        const paymentReqWithTel = {
+            ...paymentRequest,
+            billingTel: paymentRequest.billingPhone || '',
+        };
+        return await this.ccavenueService.initiatePayment(paymentReqWithTel);
+    }
+
+async initiatePayment(request: PaymentRequest): Promise<{ url: string; parameters: Record<string, string> }> {
+    const orderId = request.bookingId || uuidv4(); // Use booking ID from controller
+
+    const paymentData = {
+        order_id: orderId, // ✅ MUST be here
+        amount: request.amount.toString(),
+        currency: request.currency || this.config.currency,
+        redirect_url: request.redirectUrl,
+        cancel_url: request.cancelUrl,
+        billing_name: request.billingName,
+        billing_address: request.billingAddress,
+        billing_city: request.billingCity,
+        billing_state: request.billingState,
+        billing_country: request.billingCountry,
+        billing_zip: request.billingZip,
+        billing_email: request.billingEmail,
+        billing_tel: request.billingTel,
+        merchant_id: this.config.merchantId,
+    };
+
+    const dataString = qs.stringify(paymentData);
+    const encRequest = this.encrypt(dataString);
+
+    return {
+        url: 'https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction',
+        parameters: {
+            access_code: this.config.accessCode,
+            encRequest
+        }
+    };
+}
+
+
+    async handlePaymentSuccess(req: Request, res: Response): Promise<void> {
         try {
-            console.log('BookingController: createBooking called');
-            console.log('req.user:', req.user ? 'User object exists' : 'No user object');
-            console.log('req.body.isGuest:', req.body.isGuest);
-            console.log('req.body.token:', req.body.token ? 'Token exists in body' : 'No token in body');
+            // Support both POST (body) and GET (query)
+            const encResp = req.body.encResp || req.query.encResp;
+            let paymentResponse: any = {};
+            if (encResp) {
+                // Decrypt encResp using workingKey
+                const crypto = require('crypto');
+                const key = crypto.createHash('md5').update(this.ccavenueService['config'].workingKey).digest();
+                const iv = Buffer.alloc(16, '\0');
+                const decipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
+                let decrypted = decipher.update(encResp, 'base64', 'utf8');
+                decrypted += decipher.final('utf8');
+                // Parse query string to object
+                paymentResponse = Object.fromEntries(new URLSearchParams(decrypted));
+            } else {
+                paymentResponse = req.body;
+            }
+            // Optionally, log paymentResponse for debugging
+            // console.log('Decrypted payment response:', paymentResponse);
+            if (!paymentResponse.order_status || paymentResponse.order_status !== 'Success') {
+                res.status(400).json({ error: 'Invalid or failed payment response', details: paymentResponse });
+                return;
+            }
+            // Update booking status to paid
+            await this.bookingService.updateBooking(paymentResponse.order_id || paymentResponse.bookingId, {
+                status: 'completed',
+                paymentStatus: 'confirmed'
+            });
+            // Return success response
+            res.json({
+                message: 'Payment successful',
+                bookingId: paymentResponse.order_id || paymentResponse.bookingId,
+                paymentStatus: 'confirmed',
+                details: paymentResponse
+            });
+        } catch (error) {
+            console.error('Payment verification error:', error);
+            res.status(500).json({
+                error: 'Payment verification failed',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    }
+
+    async handlePaymentCancel(req: Request, res: Response): Promise<void> {
+        try {
+            const { bookingId } = req.body as CCAvenueResponse;
             
-            // Determine userId based on authentication status
-            let userId = undefined;
+            // Update booking status to cancelled
+            await this.bookingService.updateBooking(bookingId, { 
+                status: 'canceled',
+                paymentStatus: 'canceled'
+            });
+            
+            // Return cancellation response
+            res.json({ 
+                message: 'Payment cancelled',
+                bookingId,
+                paymentStatus: 'canceled'
+            });
+        } catch (error) {
+            console.error('Payment cancellation error:', error);
+            res.status(500).json({ 
+                error: 'Payment cancellation failed',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    };
+
+    async createBooking(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { paymentMethod, ...bookingBody } = req.body as {
+                paymentMethod: PaymentMethod;
+                [key: string]: any;
+            };
+
+               let userId = undefined;
             if (req.user && !req.body.isGuest) {
                 userId = req.user._id.toString();
                 console.log('User authenticated, userId set to:', userId);
@@ -38,52 +168,105 @@ export class BookingController {
                 console.log('User not authenticated or is guest');
             }
 
-            const bookingData = {
-                ...req.body,
-                userId: userId,
-                noOfGuests: {
-                    adults: parseInt(req.body.noOfGuests.adults),
-                    children: parseInt(req.body.noOfGuests.children || 0)
-                },
-                noOfRooms: parseInt(req.body.noOfRooms),
-                totalPrice: parseFloat(req.body.totalPrice)
-            };
+          
 
             console.log('Creating booking with userId:', userId);
-            console.log('Booking data:', bookingData);
+         
 
-            // Validate required fields
-            const requiredFields = [
-                'roomId', 'checkInDate', 'checkOutDate', 
-                'fullName', 'email', 'phone', 'totalPrice'
-            ];
 
-            for (const field of requiredFields) {
-                if (!bookingData[field]) {
-                    throw new Error(`Missing required field: ${field}`);
-                }
-            }
+            console.log(req.body)
 
-            const booking = await this.bookingService.createBooking(bookingData);
-            
-            // Include userId in response if user is authenticated
-            const response: any = {
-                success: true,
-                message: 'Booking created successfully',
-                booking
+            // Only assign userId if isGuest is false and req.user exists
+            const isGuest = !req.user;
+            const bookingData = {
+                ...bookingBody,
+                ...(isGuest ? {} : { userId: req.user ? req.user._id.toString() : undefined }),
+                noOfGuests: {
+                    adults: parseInt(bookingBody.noOfGuests.adults),
+                    children: parseInt(bookingBody.noOfGuests.children || 0)
+                },
+                noOfRooms: parseInt(bookingBody.noOfRooms),
+                totalPrice: parseFloat(bookingBody.totalPrice),
+                status: 'pending',
+                paymentStatus: paymentMethod === 'pay-later' ? 'pending' : 'pending',
+                isGuest
             };
 
-            if (userId) {
-                response.userId = userId;
+            // Explicit required field checks
+            if (!bookingBody.roomId) {
+                res.status(400).json({ error: 'Missing required field: roomId' });
+                return;
+            }
+            if (!bookingBody.checkInDate) {
+                res.status(400).json({ error: 'Missing required field: checkInDate' });
+                return;
+            }
+            if (!bookingBody.checkOutDate) {
+                res.status(400).json({ error: 'Missing required field: checkOutDate' });
+                return;
+            }
+            if (!bookingBody.fullName) {
+                res.status(400).json({ error: 'Missing required field: fullName' });
+                return;
+            }
+            if (!bookingBody.email) {
+                res.status(400).json({ error: 'Missing required field: email' });
+                return;
+            }
+            if (!bookingBody.phone) {
+                res.status(400).json({ error: 'Missing required field: phone' });
+                return;
+            }
+            if (!bookingBody.noOfGuests) {
+                res.status(400).json({ error: 'Missing required field: noOfGuests' });
+                return;
+            }
+            if (!bookingBody.noOfRooms) {
+                res.status(400).json({ error: 'Missing required field: noOfRooms' });
+                return;
+            }
+            if (!bookingBody.totalPrice) {
+                res.status(400).json({ error: 'Missing required field: totalPrice' });
+                return;
             }
 
-            res.status(201).json(response);
-        } catch (error: unknown) {
+            const booking = await this.bookingService.createBooking(bookingData as Partial<Booking>);
+
+            if (paymentMethod === 'ccavenue') {
+                const paymentRequest: CCAvenuePaymentRequest = {
+                    amount: bookingData.totalPrice,
+                    bookingId: String(booking._id),
+                    currency: 'INR',
+                    redirectUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-success`,
+                    cancelUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-cancel`,
+                    billingName: booking.fullName,
+                    billingAddress: booking.specialRequest || '',
+                    billingCity: '',
+                    billingState: '',
+                    billingCountry: 'India',
+                    billingZip: '',
+                    billingEmail: booking.email,
+                    billingPhone: booking.phone
+                };
+
+                const paymentResponse = await this._initiatePayment(paymentRequest);
+                
+                res.json({
+                    booking,
+                    payment: paymentResponse,
+                    paymentMethod: 'ccavenue',
+                  
+                });
+            } 
+            else {
+                res.json({
+                    booking,
+                    paymentMethod: 'pay-later'
+                });
+            }
+        } catch (error) {
             console.error('Booking creation error:', error);
-            res.status(400).json({ 
-                success: false, 
-                error: error instanceof Error ? error.message : 'Unknown error occurred' 
-            });
+            res.status(500).json({ error: 'Booking creation failed' });
         }
     };
 

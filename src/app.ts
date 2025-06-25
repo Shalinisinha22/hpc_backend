@@ -15,6 +15,7 @@ import hallRoutes from './routes/hallRoutes';
 import offerRoutes from './routes/offerRoutes';
 import packageRoutes from './routes/packageRoutes';
 import eventBookingRoutes from './routes/eventBookingRoutes';
+import ccavenueRoutes from './routes/ccavenueRoutes';
 import { logger } from './middleware/loggerMiddleware';
 import { errorHandler } from './middleware/errorMiddleware';
 import roleRoutes from './routes/roleRoutes';
@@ -97,6 +98,7 @@ app.use('/api/v1/event-bookings', eventBookingRoutes);
 app.use('/api/v1/roles', roleRoutes);
 app.use("/api/v1/dining",diningRoutes);
 app.use("/api/v1/dining-bookings", diningBookingRoutes);
+app.use('/api/v1/ccavenue', ccavenueRoutes);
 
 app.use(errorHandler);
 
