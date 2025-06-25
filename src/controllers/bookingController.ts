@@ -226,9 +226,8 @@ export class BookingController {
     };
 
     async getBooking(req: AuthRequest, res: Response): Promise<void> {
-       
-   
-        if (req.user.role == 'user') {
+        // Only allow admins (not users) for these routes
+        if (!req.user || req.user.role === 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -245,8 +244,7 @@ export class BookingController {
     }
 
     async updateBooking(req: AuthRequest, res: Response): Promise<void> {
- 
-            if (req.user.role == 'user'){
+        if (!req.user || req.user.role === 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -263,8 +261,7 @@ export class BookingController {
     }
 
     async deleteBooking(req: AuthRequest, res: Response): Promise<void> {
-        
-          if (req.user.role == 'user') {
+        if (!req.user || req.user.role === 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
@@ -278,13 +275,13 @@ export class BookingController {
         } catch (error: unknown) {
             res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
         }
-    }    async getAllBookings(req: AuthRequest, res: Response): Promise<void> {
-        console.log(req.user.role)
-         if (req.user.role == 'user') {
+    }
+
+    async getAllBookings(req: AuthRequest, res: Response): Promise<void> {
+        if (!req.user || req.user.role === 'user') {
             res.status(403).json({ error: 'Forbidden: Admins only' });
             return;
         }
-
         try {
             const bookings = await this.bookingService.getAllBookings();
             res.json({
@@ -295,8 +292,6 @@ export class BookingController {
         } catch (error: unknown) {
             res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
         }
-
-
     }
 
     async getBookingsByUserId(req: AuthRequest, res: Response): Promise<void> {
@@ -359,12 +354,11 @@ export class BookingController {
 
 
     async getCountOfBookings(req: AuthRequest, res: Response): Promise<void> {
+        if (!req.user || req.user.role === 'user') {
+            res.status(403).json({ error: 'Forbidden: Admins only' });
+            return;
+        }
         try {
-                if (req.user.role == 'user') {
-                res.status(403).json({ error: 'Forbidden: Admins only' });
-                return;
-            }
-            
             const count = await this.bookingService.getCountOfBookings();
             res.json({ count });
         } catch (error: unknown) {
@@ -373,12 +367,11 @@ export class BookingController {
     }
 
     async getTotalRevenue(req: AuthRequest, res: Response): Promise<void> {
+        if (!req.user || req.user.role === 'user') {
+            res.status(403).json({ error: 'Forbidden: Admins only' });
+            return;
+        }
         try {
-              if (req.user.role == 'user') {
-                res.status(403).json({ error: 'Forbidden: Admins only' });
-                return;
-            }
-            
             const totalRevenue = await this.bookingService.getTotalRevenue();
             res.json({ totalRevenue });
         } catch (error: unknown) {
@@ -387,12 +380,11 @@ export class BookingController {
     }
 
     async getFailedBookings(req: AuthRequest, res: Response): Promise<void> {
+        if (!req.user || req.user.role === 'user') {
+            res.status(403).json({ error: 'Forbidden: Admins only' });
+            return;
+        }
         try {
-             if (req.user.role == 'user') {
-                res.status(403).json({ error: 'Forbidden: Admins only' });
-                return;
-            }
-            
             const failedBookings = await this.bookingService.getFailedBookings();
             res.json({
                 status: 'success',

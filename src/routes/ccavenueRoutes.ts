@@ -5,9 +5,10 @@ import { Request, Response } from 'express';
 const router = Router();
 const bookingController = new BookingController();
 
-// Payment initiation route
-router.post('/initiate-payment', (req: Request, res: Response) => 
-    bookingController.initiatePayment(req, res));
+// Payment initiation route (NOT SUPPORTED DIRECTLY - use bookingController.createBooking for payment initiation)
+router.post('/initiate-payment', (req: Request, res: Response) => {
+    res.status(400).json({ error: 'Direct payment initiation is not supported. Please use the booking creation endpoint to initiate payment.' });
+});
 
 // Payment success callback route (support both POST and GET, handle encResp)
 router.post('/payment-success', (req: Request, res: Response) => 
