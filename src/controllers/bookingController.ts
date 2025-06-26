@@ -40,64 +40,57 @@ export class BookingController {
     }    
 
     // Payment methods
-    private async _initiatePayment(booking: Booking): Promise<any> {
-        // Compose PaymentRequest for CCAvenueService
+  private async _initiatePayment(booking: Booking): Promise<any> {
+    try {
         const paymentRequest = {
             bookingId: String(booking._id),
             amount: booking.totalPrice,
             currency: 'INR',
             redirectUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-success`,
             cancelUrl: `${process.env.BASE_URL}/api/v1/ccavenue/payment-cancel`,
-            billingDetails: {
-                name: booking.fullName,
-                address: booking.specialRequest || '',
-                city: '',
-                state: '',
-                country: 'India',
-                zip: '',
-                email: booking.email,
-                phone: booking.phone
-            }
+   
         };
         return await this.ccavenueService.initiatePayment(paymentRequest);
+    } catch (error) {
+        console.error('Payment initiation failed:', error);
+        throw new Error('Payment gateway error');
     }
-
+}
     async handlePaymentSuccess(req: Request, res: Response): Promise<void> {
         try {
-            // Support both POST (body) and GET (query)
+         
             const encResp = req.body.encResp || req.query.encResp;
             let paymentResponse: any = {};
             if (encResp) {
-                // Decrypt encResp using workingKey
+             
                 const crypto = require('crypto');
                 const key = crypto.createHash('md5').update(this.ccavenueService['config'].workingKey).digest();
                 const iv = Buffer.alloc(16, '\0');
                 const decipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
                 let decrypted = decipher.update(encResp, 'base64', 'utf8');
                 decrypted += decipher.final('utf8');
-                // Parse query string to object
+        
                 paymentResponse = Object.fromEntries(new URLSearchParams(decrypted));
             } else {
                 paymentResponse = req.body;
             }
-            // Optionally, log paymentResponse for debugging
-            // console.log('Decrypted payment response:', paymentResponse);
+        
             if (!paymentResponse.order_status || paymentResponse.order_status !== 'Success') {
                 res.status(400).json({ error: 'Invalid or failed payment response', details: paymentResponse });
                 return;
             }
-            // Update booking status to paid
-            await this.bookingService.updateBooking(paymentResponse.order_id || paymentResponse.bookingId, {
-                status: 'completed',
-                paymentStatus: 'confirmed'
-            });
-            // Return success response
-            res.json({
-                message: 'Payment successful',
-                bookingId: paymentResponse.order_id || paymentResponse.bookingId,
-                paymentStatus: 'confirmed',
-                details: paymentResponse
-            });
+      
+            if (paymentResponse.order_status === 'Success') {
+                await this.bookingService.updateBooking(paymentResponse.order_id || paymentResponse.bookingId, {
+                    status: 'completed',
+                    paymentStatus: 'confirmed'
+                });
+              
+                return res.redirect(`${process.env.FRONTEND_URL}/booking/payment-success?bookingId=${paymentResponse.order_id || paymentResponse.bookingId}`);
+            } else {
+                // Redirect to frontend failure page
+                return res.redirect(`${process.env.FRONTEND_URL}/booking/payment-failure?bookingId=${paymentResponse.order_id || paymentResponse.bookingId}`);
+            }
         } catch (error) {
             console.error('Payment verification error:', error);
             res.status(500).json({
