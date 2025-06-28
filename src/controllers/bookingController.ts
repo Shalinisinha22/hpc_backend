@@ -35,6 +35,7 @@ export class BookingController {
         this.getTotalRevenue = this.getTotalRevenue.bind(this);
         this.handlePaymentSuccess = this.handlePaymentSuccess.bind(this);
         this.handlePaymentCancel = this.handlePaymentCancel.bind(this);
+        this.getMonthlyRevenue=this.getMonthlyRevenue.bind(this);
       
    
     }    
@@ -383,6 +384,23 @@ export class BookingController {
                 status: 'success',
                 data: failedBookings,
                 message: 'Failed bookings retrieved successfully'
+            });
+        } catch (error: unknown) {
+            res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+        }
+    }
+
+    async getMonthlyRevenue(req: AuthRequest, res: Response): Promise<void> {
+        if (!req.user || req.user.role === 'user') {
+            res.status(403).json({ error: 'Forbidden: Admins only' });
+            return;
+        }
+        try {
+            const monthlyRevenue = await this.bookingService.getMonthlyRevenue();
+            res.json({
+                status: 'success',
+                data: monthlyRevenue,
+                message: 'Monthly revenue retrieved successfully'
             });
         } catch (error: unknown) {
             res.status(500).json({ error: error instanceof Error ? error.message : String(error) });

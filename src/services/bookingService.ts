@@ -67,6 +67,7 @@ export class BookingService {
     }
 
     public async getAllBookings(): Promise<DetailedBooking[]> {
+        // Populate room details for each booking
         const bookings = await Booking.find()
             .select({
                 bookingId: 1,
@@ -75,9 +76,22 @@ export class BookingService {
                 phone: 1,
                 paymentStatus: 1,
                 status: 1,
-                createdAt: 1
+                createdAt: 1,
+                roomId: 1,
+                checkInDate: 1,
+                checkOutDate: 1,
+                totalPrice: 1
             })
-            .sort({ createdAt: -1 }); 
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // Import Room model dynamically to avoid circular dependency
+        const Room = (await import('../models/Room')).default;
+
+        // Fetch room names for all bookings
+        const roomIds = bookings.map(b => b.roomId).filter(Boolean);
+        const rooms = await Room.find({ _id: { $in: roomIds } }).select({ _id: 1, room_title: 1 }).lean();
+        const roomMap = new Map(rooms.map((r: any) => [String(r._id), r.room_title]));
 
         return bookings.map(booking => ({
             bookingId: booking.bookingId,
@@ -86,7 +100,11 @@ export class BookingService {
             contact: booking.phone,
             bookingDate: booking.createdAt,
             paymentStatus: booking.paymentStatus,
-            status: booking.status || ''
+            status: booking.status || '',
+            roomName: booking.roomId ? roomMap.get(String(booking.roomId)) || '' : '',
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            totalPrice: booking.totalPrice
         }));
     }
 
@@ -146,5 +164,31 @@ export class BookingService {
             console.error('Error calculating total revenue:', error);
             throw error;
         }
+    }
+
+    public async getMonthlyRevenue(): Promise<{ month: string, totalRevenue: number, totalBookings: number }[]> {
+        // Exclude cancelled bookings and payments
+        const pipeline = [
+            {
+                $match: {
+                    paymentStatus: { $ne: 'cancelled' },
+                    status: { $ne: 'canceled' }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                    totalRevenue: { $sum: "$totalPrice" },
+                    totalBookings: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 as 1 } }
+        ];
+        const results = await Booking.aggregate(pipeline as any[]);
+        return results.map((r: any) => ({
+            month: r._id,
+            totalRevenue: r.totalRevenue,
+            totalBookings: r.totalBookings
+        }));
     }
 }

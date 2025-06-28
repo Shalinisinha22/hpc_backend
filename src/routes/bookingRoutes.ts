@@ -23,6 +23,9 @@ router.get('/counter', auth, (req, res) => bookingController.getCountOfBookings(
 //get booking revenue (admin only)
 router.get('/revenue', auth, (req, res) => bookingController.getTotalRevenue(req, res));
 
+//getmonthlyRevenue
+router.get('/monthlyRevenue', auth, (req, res) => bookingController.getMonthlyRevenue(req, res));
+
 //cancelledBookings (admin only)
 router.get('/cancelled', auth, (req, res) => bookingController.getFailedBookings(req, res));
 
@@ -34,5 +37,7 @@ router.put('/:id', auth, (req, res) => bookingController.updateBooking(req, res)
 
 // Delete booking (admin only)
 router.delete('/:id', auth, (req, res) => bookingController.deleteBooking(req, res));
+
+
 
 export default router;
