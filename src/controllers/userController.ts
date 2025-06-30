@@ -14,7 +14,7 @@ export class UserController {
     try {
       // Validate required fields
       const { name, email, phone, password } = req.body;
-      if (!name || !email || !password || !phone) {
+      if (!name || !email || !password) {
         res.status(400).json({ 
           error: 'Missing required fields: name, email, phone, and password are required',
           success: false 
