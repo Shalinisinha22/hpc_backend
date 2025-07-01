@@ -24,6 +24,7 @@ export interface Booking extends Document {
     paidAt: Date;
   };
   isGuest: boolean;
+  coupon?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -79,6 +80,11 @@ const BookingSchema: Schema = new Schema(
       type: Boolean,
       default: false,
       required: true,
+    },
+    coupon: {
+      type: String,
+      required: false,
+      trim: true,
     },
      status:{
     type: String,
